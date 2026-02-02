@@ -1,0 +1,62 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: authService
+                fallbackUri: forward:/fallback/auth
+        
+        - id: wallet-service
+          uri: lb://wallet-service
+          predicates:
+            - Path=/api/wallets/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: walletService
+                fallbackUri: forward:/fallback/wallet
+
+        - id: transaction-service
+          uri: lb://transaction-service
+          predicates:
+            - Path=/api/transactions/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: transactionService
+                fallbackUri: forward:/fallback/transaction
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      authService:
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+      walletService:
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+      transactionService:
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50

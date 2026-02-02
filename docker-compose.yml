@@ -1,0 +1,336 @@
+version: '3.8'
+
+services:
+  # ======================
+  # MYSQL - Base de Datos Transaccional
+  # ======================
+  mysql:
+    image: mysql:8.0
+    container_name: naranjax-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_USER: naranjax_user
+      MYSQL_PASSWORD: naranjax_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - naranjax-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ======================
+  # MONGODB - Logs y Notificaciones (Deshabilitado temporalmente)
+  # ======================
+  mongodb:
+    image: mongo:6.0
+    container_name: naranjax-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpass
+      MONGO_INITDB_DATABASE: transaction_db
+    ports:
+      - "27017:27017" # Cambiado a estándar para facilitar
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - naranjax-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ======================
+  # ZOOKEEPER - Coordinación de Kafka
+  # ======================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: naranjax-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    networks:
+      - naranjax-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ======================
+  # KAFKA - Event Streaming
+  # ======================
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: naranjax-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - naranjax-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # ======================
+  # KAFKA CONTROL CENTER (Deshabilitado temporalmente)
+  # ======================
+  # control-center:
+  #   image: confluentinc/cp-enterprise-control-center:7.5.0
+  #   container_name: naranjax-control-center
+  #   depends_on:
+  #     kafka:
+  #       condition: service_healthy
+  #   environment:
+  #     CONTROL_CENTER_BOOTSTRAP_SERVERS: kafka:29092
+  #     CONTROL_CENTER_REPLICATION_FACTOR: 1
+  #     CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+  #     CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+  #     CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+  #     PORT: 9021
+  #   ports:
+  #     - "9021:9021"
+  #   networks:
+  #     - naranjax-network
+  #   restart: unless-stopped
+
+  # ======================
+  # DISCOVERY SERVER (Eureka)
+  # ======================
+  discovery-server:
+    build:
+      context: .
+      dockerfile: infrastructure/discovery-server/Dockerfile
+    container_name: naranjax-discovery-server
+    ports:
+      - "8761:8761"
+    networks:
+      - naranjax-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8761/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ======================
+  # CONFIG SERVER
+  # ======================
+  config-server:
+    build:
+      context: .
+      dockerfile: infrastructure/config-server/Dockerfile
+    container_name: naranjax-config-server
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    ports:
+      - "8888:8888"
+    environment:
+      SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS: file:/app/config-repo
+      SPRING_PROFILES_ACTIVE: native
+    volumes:
+      - ./config-repo:/app/config-repo
+    networks:
+      - naranjax-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ======================
+  # API GATEWAY
+  # ======================
+  api-gateway:
+    build:
+      context: .
+      dockerfile: infrastructure/api-gateway/Dockerfile
+    container_name: naranjax-api-gateway
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    networks:
+      - naranjax-network
+    restart: unless-stopped
+
+  # ======================
+  # AUTH SERVICE
+  # ======================
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: naranjax-auth-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/auth_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: naranjax_user
+      SPRING_DATASOURCE_PASSWORD: naranjax_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    ports:
+      - "8081:8081"
+    networks:
+      - naranjax-network
+    restart: unless-stopped
+
+  # ======================
+  # WALLET SERVICE
+  # ======================
+  wallet-service:
+    build:
+      context: .
+      dockerfile: services/wallet-service/Dockerfile
+    container_name: naranjax-wallet-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/wallet_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: naranjax_user
+      SPRING_DATASOURCE_PASSWORD: naranjax_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    ports:
+      - "8082:8082"
+    networks:
+      - naranjax-network
+    restart: unless-stopped
+
+  # ======================
+  # TRANSACTION SERVICE
+  # ======================
+  transaction-service:
+    build:
+      context: .
+      dockerfile: services/transaction-service/Dockerfile
+    container_name: naranjax-transaction-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/transaction_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: naranjax_user
+      SPRING_DATASOURCE_PASSWORD: naranjax_pass
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+    ports:
+      - "8083:8083"
+    networks:
+      - naranjax-network
+    restart: unless-stopped
+
+  # ======================
+  # NOTIFICATION SERVICE (Deshabilitado temporalmente)
+  # ======================
+  # notification-service:
+  #   build:
+  #     context: .
+  #     dockerfile: services/notification-service/Dockerfile
+  #   container_name: naranjax-notification-service
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+  #     discovery-server:
+  #       condition: service_healthy
+  #   environment:
+  #     SPRING_DATA_MONGODB_URI: mongodb://admin:adminpass@mongodb:27017/notification_db?authSource=admin
+  #     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+  #     EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+  #     MAIL_USERNAME: ${MAIL_USERNAME:-your-email@gmail.com}
+  #     MAIL_PASSWORD: ${MAIL_PASSWORD:-your-password}
+  #   ports:
+  #     - "8084:8084"
+  #   networks:
+  #     - naranjax-network
+  #   restart: unless-stopped
+
+# ======================
+# NETWORKS
+# ======================
+networks:
+  naranjax-network:
+    driver: bridge
+    name: naranjax-network
+
+# ======================
+# VOLUMES
+# ======================
+volumes:
+  mysql_data:
+    name: naranjax-mysql-data
+  mongodb_data:
+    name: naranjax-mongodb-data
+  zookeeper_data:
+    name: naranjax-zookeeper-data
+  zookeeper_logs:
+    name: naranjax-zookeeper-logs
+  kafka_data:
+    name: naranjax-kafka-data

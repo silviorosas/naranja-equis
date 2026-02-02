@@ -1,0 +1,69 @@
+package com.naranjax.wallet.service;
+
+import com.naranjax.wallet.entity.Wallet;
+import com.naranjax.wallet.repository.WalletRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.Random;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class WalletService {
+
+    private final WalletRepository walletRepository;
+    private final Random random = new Random();
+
+    @Transactional
+    public void createWallet(Long userId, String email) {
+        if (walletRepository.findByUserId(userId).isPresent()) {
+            log.warn("Wallet already exists for user: {}. Skipping creation.", userId);
+            return;
+        }
+
+        log.info("Creating wallet for user: {}", userId);
+
+        String cvu = "00000031" + (10000000000000L + (long) (random.nextDouble() * 90000000000000L));
+        String alias = email.split("@")[0] + ".nx." + (random.nextInt(900) + 100);
+
+        Wallet wallet = Wallet.builder()
+                .userId(userId)
+                .cvu(cvu)
+                .alias(alias)
+                .balance(BigDecimal.ZERO)
+                .currency("ARS")
+                .build();
+
+        walletRepository.save(wallet);
+        log.info("Wallet created successfully with CVU: {}", cvu);
+    }
+
+    @Transactional
+    public void updateBalance(Long userId, BigDecimal amount, String type) {
+        log.info("Updating balance for user: {}. Amount: {}. Type: {}", userId, amount, type);
+
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Cartera no encontrada para el usuario: " + userId));
+
+        if ("TRANSFER_OUT".equals(type) || "WITHDRAWAL".equals(type)) {
+            if (wallet.getBalance().compareTo(amount) < 0) {
+                throw new RuntimeException("Saldo insuficiente en la billetera de ID: " + userId);
+            }
+            wallet.setBalance(wallet.getBalance().subtract(amount));
+        } else {
+            // DEPOSIT or TRANSFER_IN
+            wallet.setBalance(wallet.getBalance().add(amount));
+        }
+
+        walletRepository.save(wallet);
+        log.info("Balance updated successfully for user: {}. New balance: {}", userId, wallet.getBalance());
+    }
+
+    public java.util.Optional<Wallet> getWalletByUserId(Long userId) {
+        return walletRepository.findByUserId(userId);
+    }
+}
