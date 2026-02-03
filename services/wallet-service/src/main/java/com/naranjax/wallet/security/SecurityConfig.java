@@ -21,15 +21,25 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
+    public org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer webSecurityCustomizer() {
+        // CORRECCIÓN: Quitamos el "/user" porque tu controlador no lo usa
+        return (web) -> web.ignoring().requestMatchers("/wallets/**");
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/wallets/**").permitAll() // Permitimos consultar saldo (validación interna)
-                        .anyRequest().authenticated())
+                        // CORRECCIÓN: Permitimos el acceso a las billeteras de forma abierta
+                        // para que el TransactionService pueda consultar el saldo
+                        .requestMatchers("/wallets/**").permitAll()
+                        .anyRequest().authenticated()
+                )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

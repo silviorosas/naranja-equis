@@ -25,3 +25,5 @@ spring:
       properties:
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json.trusted.packages: "com.naranjax.*"
+jwt:
+  secret: naranjax-secret-key-change-in-production-minimum-256-bits-required-very-long-string

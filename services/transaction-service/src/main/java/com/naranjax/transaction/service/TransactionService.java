@@ -5,13 +5,22 @@ import com.naranjax.transaction.dto.TransactionRequest;
 import com.naranjax.transaction.entity.Transaction;
 import com.naranjax.transaction.entity.TransactionAudit;
 import com.naranjax.transaction.entity.TransactionType;
+import com.naranjax.transaction.exception.InsufficientFundsException;
 import com.naranjax.transaction.repository.TransactionAuditRepository;
 import com.naranjax.transaction.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,14 +34,15 @@ public class TransactionService {
     private final TransactionAuditRepository auditRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+    // Es mejor usar un Bean configurado, pero mantenemos tu RestTemplate por ahora
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Transactional
     public Transaction processDeposit(Long userId, BigDecimal amount) {
         log.info("Processing deposit for user: {} with amount: {}", userId, amount);
 
         Transaction transaction = Transaction.builder()
-                .senderId(0L) // 0 indicates system/external deposit
+                .senderId(0L)
                 .receiverId(userId)
                 .amount(amount)
                 .type(TransactionType.DEPOSIT)
@@ -54,10 +64,10 @@ public class TransactionService {
                 senderId, request.getReceiverId(), request.getAmount());
 
         if (senderId.equals(request.getReceiverId())) {
-            throw new RuntimeException("No puedes transferirte a ti mismo");
+            throw new IllegalArgumentException("No puedes transferirte a ti mismo");
         }
 
-        // Validar saldo del emisor llamando a WalletService (comunicación síncrona)
+        // Validar saldo del emisor llamando a WalletService
         validateBalance(senderId, request.getAmount());
 
         Transaction transaction = Transaction.builder()
@@ -65,7 +75,7 @@ public class TransactionService {
                 .receiverId(request.getReceiverId())
                 .amount(request.getAmount())
                 .type(TransactionType.TRANSFER)
-                .status("COMPLETED") // In a real system, this might start as PENDING
+                .status("COMPLETED")
                 .description(request.getDescription())
                 .build();
 
@@ -78,7 +88,11 @@ public class TransactionService {
 
     private void validateBalance(Long userId, BigDecimal amount) {
         try {
+            // Hacemos la llamada limpia, sin headers de Authorization
             String url = "http://wallet-service:8082/wallets/" + userId;
+            log.info("Consultando saldo (anónimo) en: {}", url);
+
+            // Usamos una llamada GET simple de RestTemplate
             WalletDto wallet = restTemplate.getForObject(url, WalletDto.class);
 
             if (wallet == null) {
@@ -86,12 +100,12 @@ public class TransactionService {
             }
 
             if (wallet.getBalance().compareTo(amount) < 0) {
-                throw new RuntimeException(
+                throw new InsufficientFundsException(
                         "Saldo insuficiente. Tienes: " + wallet.getBalance() + ", intentas enviar: " + amount);
             }
-        } catch (org.springframework.web.client.RestClientException e) {
-            log.error("Error validando saldo con WalletService", e);
-            throw new RuntimeException("Error verificando saldo: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Error validando saldo: {}", e.getMessage());
+            throw new RuntimeException("Error al verificar el estado de la billetera: " + e.getMessage());
         }
     }
 
@@ -104,7 +118,6 @@ public class TransactionService {
                 .type(transaction.getType().name())
                 .build();
 
-        log.info("Emitting transaction completed event for ID: {}", transaction.getId());
         kafkaTemplate.send("transaction.events", event);
     }
 
@@ -122,7 +135,6 @@ public class TransactionService {
                 .build();
 
         auditRepository.save(audit);
-        log.info("Transaction audited in MongoDB for ID: {}", transaction.getId());
     }
 
     @lombok.Data
