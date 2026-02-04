@@ -7,7 +7,7 @@ spring:
     username: naranjax_user
     password: naranjax_pass
     driver-class-name: com.mysql.cj.jdbc.Driver
-  
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,9 +16,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
 
+  # === CONFIGURACIÓN DE REDIS (Nueva) ===
   data:
     mongodb:
       uri: mongodb://admin:adminpass@mongodb:27017/transaction_db?authSource=admin
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
 
   kafka:
     producer:
@@ -31,6 +35,35 @@ spring:
       properties:
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json.trusted.packages: "com.naranjax.*"
+        # Esto le dice qué clase usar si no hay headers
+        spring.json.value.default.type: "com.naranjax.common.event.BalanceUpdatedEvent"
+        # Y esto permite que use esa clase aunque el paquete sea distinto al del emisor
+        spring.json.use.type.headers: false
 
+# === CONFIGURACIÓN DE RESILIENCE4J (Nueva) ===
+resilience4j:
+  circuitbreaker:
+    instances:
+      walletServiceCB:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 15s
+        registerHealthIndicator: true
+        allowHealthIndicatorToFail: false
+
+# === SEGURIDAD ===
 jwt:
   secret: naranjax-secret-key-change-in-production-minimum-256-bits-required-very-long-string
+
+# Opcional: Recomendado para monitorear el Circuit Breaker
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always

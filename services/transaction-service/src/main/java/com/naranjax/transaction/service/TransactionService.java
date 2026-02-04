@@ -8,21 +8,18 @@ import com.naranjax.transaction.entity.TransactionType;
 import com.naranjax.transaction.exception.InsufficientFundsException;
 import com.naranjax.transaction.repository.TransactionAuditRepository;
 import com.naranjax.transaction.repository.TransactionRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Service
@@ -34,13 +31,14 @@ public class TransactionService {
     private final TransactionAuditRepository auditRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    // Es mejor usar un Bean configurado, pero mantenemos tu RestTemplate por ahora
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String BALANCE_CACHE_KEY = "wallet_balance:";
 
     @Transactional
     public Transaction processDeposit(Long userId, BigDecimal amount) {
         log.info("Processing deposit for user: {} with amount: {}", userId, amount);
-
         Transaction transaction = Transaction.builder()
                 .senderId(0L)
                 .receiverId(userId)
@@ -51,10 +49,8 @@ public class TransactionService {
                 .build();
 
         Transaction saved = transactionRepository.save(transaction);
-
         auditTransaction(saved);
         emitTransactionEvent(saved);
-
         return saved;
     }
 
@@ -67,7 +63,6 @@ public class TransactionService {
             throw new IllegalArgumentException("No puedes transferirte a ti mismo");
         }
 
-        // Validar saldo del emisor llamando a WalletService
         validateBalance(senderId, request.getAmount());
 
         Transaction transaction = Transaction.builder()
@@ -81,32 +76,74 @@ public class TransactionService {
 
         Transaction saved = transactionRepository.save(transaction);
 
-        emitTransactionEvent(saved);
+        // === NUEVO: Auditoría en MongoDB para transferencias ===
+        auditTransaction(saved);
 
+        emitTransactionEvent(saved);
         return saved;
     }
 
-    private void validateBalance(Long userId, BigDecimal amount) {
+    // CAMBIO: Se cambió a 'public' para que el proxy de AOP de Resilience4j funcione correctamente
+    @CircuitBreaker(name = "walletServiceCB", fallbackMethod = "fallbackValidateBalance")
+    public void validateBalance(Long userId, BigDecimal amount) {
+        String cacheKey = BALANCE_CACHE_KEY + userId;
+        BigDecimal balance = null;
+        boolean isFromCache = false; // NUEVA BANDERA
+
         try {
-            // Hacemos la llamada limpia, sin headers de Authorization
-            String url = "http://wallet-service:8082/wallets/" + userId;
-            log.info("Consultando saldo (anónimo) en: {}", url);
-
-            // Usamos una llamada GET simple de RestTemplate
-            WalletDto wallet = restTemplate.getForObject(url, WalletDto.class);
-
-            if (wallet == null) {
-                throw new RuntimeException("Billetera no encontrada para el usuario: " + userId);
-            }
-
-            if (wallet.getBalance().compareTo(amount) < 0) {
-                throw new InsufficientFundsException(
-                        "Saldo insuficiente. Tienes: " + wallet.getBalance() + ", intentas enviar: " + amount);
+            String cachedBalance = (String) redisTemplate.opsForValue().get(cacheKey);
+            if (cachedBalance != null) {
+                log.info("NUEVO Cache-Aside: HIT - Saldo en Redis para user {}: {}", userId, cachedBalance);
+                balance = new BigDecimal(cachedBalance);
+                isFromCache = true; // Marcamos que ya lo tenemos
             }
         } catch (Exception e) {
-            log.error("Error validando saldo: {}", e.getMessage());
-            throw new RuntimeException("Error al verificar el estado de la billetera: " + e.getMessage());
+            log.warn("NUEVO Cache-Aside: Error al leer de Redis... {}", e.getMessage());
         }
+
+        if (balance == null) {
+            String url = "http://wallet-service:8082/wallets/" + userId;
+            log.info("NUEVO Cache-Aside: MISS - Consultando Wallet Service via REST: {}", url);
+
+            WalletDto wallet = restTemplate.getForObject(url, WalletDto.class);
+            if (wallet == null) throw new RuntimeException("Billetera no encontrada");
+
+            balance = wallet.getBalance();
+            // Solo marcamos isFromCache = false (ya lo está por defecto)
+        }
+
+        // NUEVO: Solo actualizamos Redis si NO vino de la caché (evitamos el SETEX redundante)
+        if (!isFromCache) {
+            try {
+                redisTemplate.opsForValue().set(cacheKey, balance.toString(), Duration.ofMinutes(10));
+                log.info("NUEVO Cache-Aside: Redis actualizado tras consulta REST");
+            } catch (Exception e) {
+                log.warn("NUEVO Cache-Aside: Error al escribir en Redis");
+            }
+        }
+
+        if (balance.compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Saldo insuficiente. Disponible: " + balance);
+        }
+    }
+
+    // El Fallback se mantiene pero ahora es el último recurso (Nivel 3)
+    public void fallbackValidateBalance(Long userId, BigDecimal amount, Throwable t) {
+        log.warn("NUEVO Cache-Aside: Fallback activado por error: {}. Intentando última lectura de Redis para user: {}",
+                t.getMessage(), userId);
+
+        String cachedBalance = (String) redisTemplate.opsForValue().get(BALANCE_CACHE_KEY + userId);
+
+        if (cachedBalance == null) {
+            log.error("NUEVO Cache-Aside: Fallback fallido - Sin datos en caché ni servicio disponible.");
+            throw new RuntimeException("Servicio no disponible y sin datos en caché. No se puede validar saldo.");
+        }
+
+        BigDecimal balance = new BigDecimal(cachedBalance);
+        if (balance.compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Saldo insuficiente (Validado por caché de emergencia)");
+        }
+        log.info("NUEVO Cache-Aside: Validación exitosa vía caché de emergencia. Saldo: {}", balance);
     }
 
     private void emitTransactionEvent(Transaction transaction) {
@@ -117,7 +154,6 @@ public class TransactionService {
                 .amount(transaction.getAmount())
                 .type(transaction.getType().name())
                 .build();
-
         kafkaTemplate.send("transaction.events", event);
     }
 
@@ -133,7 +169,6 @@ public class TransactionService {
                 .timestamp(LocalDateTime.now())
                 .auditRole("SYSTEM_AUDIT")
                 .build();
-
         auditRepository.save(audit);
     }
 

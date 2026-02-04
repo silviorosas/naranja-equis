@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
 
   # ======================
-  # MONGODB - Logs y Notificaciones (Deshabilitado temporalmente)
+  # MONGODB - Logs y Auditoría
   # ======================
   mongodb:
     image: mongo:6.0
@@ -36,13 +36,30 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: adminpass
       MONGO_INITDB_DATABASE: transaction_db
     ports:
-      - "27017:27017" # Cambiado a estándar para facilitar
+      - "27017:27017"
     volumes:
       - mongodb_data:/data/db
     networks:
       - naranjax-network
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ======================
+  # REDIS - Caché de Saldos e Idempotencia
+  # ======================
+  redis:
+    image: redis:7.2-alpine
+    container_name: naranjax-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - naranjax-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -104,28 +121,6 @@ services:
       timeout: 10s
       retries: 5
     restart: unless-stopped
-
-  # ======================
-  # KAFKA CONTROL CENTER (Deshabilitado temporalmente)
-  # ======================
-  # control-center:
-  #   image: confluentinc/cp-enterprise-control-center:7.5.0
-  #   container_name: naranjax-control-center
-  #   depends_on:
-  #     kafka:
-  #       condition: service_healthy
-  #   environment:
-  #     CONTROL_CENTER_BOOTSTRAP_SERVERS: kafka:29092
-  #     CONTROL_CENTER_REPLICATION_FACTOR: 1
-  #     CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-  #     CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-  #     CONFLUENT_METRICS_TOPIC_REPLICATION: 1
-  #     PORT: 9021
-  #   ports:
-  #     - "9021:9021"
-  #   networks:
-  #     - naranjax-network
-  #   restart: unless-stopped
 
   # ======================
   # DISCOVERY SERVER (Eureka)
@@ -268,6 +263,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       discovery-server:
         condition: service_healthy
       config-server:
@@ -277,6 +274,8 @@ services:
       SPRING_DATASOURCE_USERNAME: naranjax_user
       SPRING_DATASOURCE_PASSWORD: naranjax_pass
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
       SPRING_CLOUD_CONFIG_URI: http://config-server:8888
     ports:
@@ -284,33 +283,6 @@ services:
     networks:
       - naranjax-network
     restart: unless-stopped
-
-  # ======================
-  # NOTIFICATION SERVICE (Deshabilitado temporalmente)
-  # ======================
-  # notification-service:
-  #   build:
-  #     context: .
-  #     dockerfile: services/notification-service/Dockerfile
-  #   container_name: naranjax-notification-service
-  #   depends_on:
-  #     mongodb:
-  #       condition: service_healthy
-  #     kafka:
-  #       condition: service_healthy
-  #     discovery-server:
-  #       condition: service_healthy
-  #   environment:
-  #     SPRING_DATA_MONGODB_URI: mongodb://admin:adminpass@mongodb:27017/notification_db?authSource=admin
-  #     SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-  #     EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
-  #     MAIL_USERNAME: ${MAIL_USERNAME:-your-email@gmail.com}
-  #     MAIL_PASSWORD: ${MAIL_PASSWORD:-your-password}
-  #   ports:
-  #     - "8084:8084"
-  #   networks:
-  #     - naranjax-network
-  #   restart: unless-stopped
 
 # ======================
 # NETWORKS

@@ -1,9 +1,11 @@
 package com.naranjax.wallet.service;
 
+import com.naranjax.common.event.BalanceUpdatedEvent;
 import com.naranjax.wallet.entity.Wallet;
 import com.naranjax.wallet.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,8 @@ public class WalletService {
 
     private final WalletRepository walletRepository;
     private final Random random = new Random();
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
     public void createWallet(Long userId, String email) {
@@ -61,6 +65,14 @@ public class WalletService {
 
         walletRepository.save(wallet);
         log.info("Balance updated successfully for user: {}. New balance: {}", userId, wallet.getBalance());
+
+        // Notificamos al mundo el nuevo saldo
+        BalanceUpdatedEvent balanceEvent = BalanceUpdatedEvent.builder()
+                .userId(userId)
+                .newBalance(wallet.getBalance())
+                .build();
+
+        kafkaTemplate.send("wallet.balance.updated", userId.toString(), balanceEvent);
     }
 
     public java.util.Optional<Wallet> getWalletByUserId(Long userId) {
