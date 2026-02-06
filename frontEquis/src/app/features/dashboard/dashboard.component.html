@@ -48,19 +48,29 @@
                     <h3>Últimos Movimientos</h3>
                     <div class="transaction-list">
                         <div *ngFor="let tx of transactions" class="tx-item">
-                            <div class="tx-icon" [class.in]="tx.type === 'DEPOSIT'"
-                                [class.out]="tx.type === 'TRANSFER'">
-                                <i *ngIf="tx.type === 'DEPOSIT'" class="fa-solid fa-arrow-down"></i>
-                                <i *ngIf="tx.type === 'TRANSFER'" class="fa-solid fa-arrow-up-from-bracket"></i>
+                            <div class="tx-icon"
+                                [class.in]="tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.receiverId === user?.id)"
+                                [class.out]="tx.type === 'TRANSFER' && tx.senderId === user?.id">
+                                <i *ngIf="tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.receiverId === user?.id)"
+                                    class="fa-solid fa-arrow-down"></i>
+                                <i *ngIf="tx.type === 'TRANSFER' && tx.senderId === user?.id"
+                                    class="fa-solid fa-arrow-up-from-bracket"></i>
                             </div>
                             <div class="tx-details">
-                                <p class="tx-title">{{ tx.type === 'DEPOSIT' ? 'Depósito recibido' : 'Transferencia
-                                    enviada' }}</p>
+                                <p class="tx-title">
+                                    <ng-container *ngIf="tx.type === 'DEPOSIT'">Depósito recibido</ng-container>
+                                    <ng-container *ngIf="tx.type === 'TRANSFER'">
+                                        {{ tx.receiverId === user?.id ? 'Transferencia recibida' : 'Transferencia
+                                        enviada' }}
+                                    </ng-container>
+                                </p>
                                 <p class="tx-date">{{ tx.createdAt | date:'dd/MM/yy HH:mm':'-0300' }}</p>
                             </div>
-                            <div class="tx-amount" [class.plus]="tx.type === 'DEPOSIT'"
-                                [class.minus]="tx.type === 'TRANSFER'">
-                                {{ tx.type === 'DEPOSIT' ? '+' : '-' }}{{ tx.amount | currency:'ARS':'symbol':'1.2-2' }}
+                            <div class="tx-amount"
+                                [class.plus]="tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.receiverId === user?.id)"
+                                [class.minus]="tx.type === 'TRANSFER' && tx.senderId === user?.id">
+                                {{ (tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.receiverId === user?.id)) ?
+                                '+' : '-' }}{{ tx.amount | currency:'ARS':'symbol':'1.2-2' }}
                             </div>
                         </div>
 
