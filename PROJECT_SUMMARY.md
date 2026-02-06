@@ -14,12 +14,17 @@
 - ✅ **API Gateway**: Punto de entrada único con StripPrefix y Circuit Breakers.
 - ✅ **Resilience4j**: Integración de Circuit Breaker para todos los servicios.
 
-### ✅ Fase 4: Frontend & Seguridad Avanzada (NUEVO)
+### ✅ Fase 4: Frontend & Seguridad Avanzada
 - ✅ **FrontEquis (Angular 18)**: Dashboard profesional, responsive (Mobile-First) y con notificaciones Toastr.
 - ✅ **Refactor de Seguridad**: Inyección de `userId` en Claims de JWT y validación de Ownership en transacciones.
-- ✅ **Transaction History**: Endpoint de historial por usuario y ordenamiento cronológico descentralizado.
-- 🔲 **Notification Service**: Consumo de eventos para envío de emails/push (En desarrollo).
-- 🔲 **Auditoría con MongoDB**: Registro de todas las transacciones para cumplimiento.
+- ✅ **Fix de Login**: Robustecimiento del `JwtAuthenticationFilter` y configuración de CORS.
+- ✅ **Dashboard Refactor**: Mejora de accesibilidad (RouterLinks), jerarquía de encabezados (H1-H2) y centralización de lógica visual en el componente TS (Clean Code).
+
+### ✅ Fase 5: Calidad de Código & CI/CD (NUEVO)
+- ✅ **SonarQube Integration**: Análisis estático de código para Backend y Frontend.
+- ✅ **JaCoCo & LCOV**: Reportes de cobertura automatizados para Java y Angular.
+- ✅ **Security Hardening**: Uso de `SecureRandom` para IDs financieros y justificación de CSRF en APIs stateless.
+- ✅ **CI/CD con GitHub Actions**: Workflow automatizado para escaneo de calidad en cada Push/PR.
 
 ---
 
@@ -28,26 +33,19 @@
 ```
 naranjaX/
 │
-├── 📁 infrastructure/           # Servicios de infraestructura
-│   ├── 📁 config-server/        # Central de configuración
-│   ├── 📁 discovery-server/     # Eureka Server
-│   └── 📁 api-gateway/          # Spring Cloud Gateway
+├── 📁 .github/workflows/        # CI/CD: Pipeline de SonarQube
 │
-├── 📁 services/                 # Microservicios de negocio
-│   ├── 📁 auth-service/         # Gestión de JWT con userId
-│   ├── 📁 wallet-service/       # Gestión de saldos y CVU
-│   ├── 📁 transaction-service/  # Lógica P2P e historial
-│   └── 📁 notification-service/ # Consumidor Kafka
+├── 📁 infrastructure/           # Eureka, Config Server, Gateway
 │
-├── 📁 frontEquis/               # NUEVO: Frontend Angular 18 (UI Premium)
+├── 📁 services/                 # Microservicios (Auth, Wallet, Transaction)
 │
-├── 📁 common-library/           # Librería compartida (DTOs, Events, UserPrincipal)
+├── 📁 frontEquis/               # Frontend con sonar-project.properties
 │
-├── 📁 config-repo/              # Repositorio local para el Config Server
+├── 📁 common-library/           # Shared Lib (Secured JwtUtils)
 │
-├── 📄 pom.xml                   # POM padre actualizado
-├── 📄 docker-compose.yml        # Orquestación con infra Spring Cloud
-└── 📄 architecture.md           # Arquitectura 2.2
+├── 📄 docker-compose.sonar.yml  # NUEVO: Infra de SonarQube & Postgres
+├── 📄 pom.xml                   # Configuración JaCoCo & Sonar centralizada
+└── 📄 architecture.md           # Arquitectura 2.3 (Quality & Security)
 ```
 
 ---
@@ -72,6 +70,6 @@ naranjaX/
 
 ---
 
-**Estado del Proyecto**: UI/UX Completa - Backend Robusto - Integrando Notificaciones 💳
-**Versión**: 2.2.0-SNAPSHOT
-**Última Actualización**: 2026-02-05
+**Estado del Proyecto**: Calidad Certificada - UI Premium - CI/CD Active 🛡️
+**Versión**: 2.3.0-SNAPSHOT
+**Última Actualización**: 2026-02-06

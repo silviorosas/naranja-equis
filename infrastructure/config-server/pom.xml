@@ -13,6 +13,10 @@
     <artifactId>config-server</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
+    <properties>
+        <sonar.projectKey>naranjax-config-server</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

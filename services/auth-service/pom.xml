@@ -17,6 +17,10 @@
     <name>Auth Service</name>
     <description>Servicio de Autenticación y Autorización</description>
 
+    <properties>
+        <sonar.projectKey>naranjax-auth-service</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <!-- Common Library -->
         <dependency>

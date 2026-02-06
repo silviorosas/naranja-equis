@@ -7,11 +7,12 @@ import { Wallet } from '../../core/models/wallet.model';
 import { Transaction } from '../../core/models/transaction.model';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, RouterLink],
     templateUrl: './dashboard.component.html',
     styleUrl: './dashboard.component.css'
 })
@@ -109,6 +110,27 @@ export class DashboardComponent implements OnInit {
                 this.toastr.error('No se pudo encontrar el destinatario. Verifica el CVU o Alias.', 'Error');
             }
         });
+    }
+
+    getTransactionIconClass(tx: Transaction): string {
+        return this.isPositive(tx) ? 'in' : 'out';
+    }
+
+    getAmountClass(tx: Transaction): string {
+        return this.isPositive(tx) ? 'plus' : 'minus';
+    }
+
+    getTransactionIcon(tx: Transaction): string {
+        return this.isPositive(tx) ? 'fa-solid fa-arrow-down' : 'fa-solid fa-arrow-up-from-bracket';
+    }
+
+    isPositive(tx: Transaction): boolean {
+        return tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.receiverId === this.user?.id);
+    }
+
+    getTransactionTitle(tx: Transaction): string {
+        if (tx.type === 'DEPOSIT') return 'Depósito recibido';
+        return tx.receiverId === this.user?.id ? 'Transferencia recibida' : 'Transferencia enviada';
     }
 
     logout() {

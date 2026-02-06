@@ -2,13 +2,13 @@
     <!-- Sidebar Desktop -->
     <aside class="sidebar">
         <div class="brand">
-            <h1>Naranja<span>Equis</span></h1>
+            <span class="logo-text">Naranja<span>Equis</span></span>
         </div>
         <nav>
-            <a class="active"><i class="fa-solid fa-house"></i> Inicio</a>
-            <a><i class="fa-solid fa-credit-card"></i> Mis Tarjetas</a>
-            <a><i class="fa-solid fa-user"></i> Mi Perfil</a>
-            <a><i class="fa-solid fa-shield-halved"></i> Seguridad</a>
+            <a routerLink="/dashboard" class="active"><i class="fa-solid fa-house"></i> Inicio</a>
+            <a routerLink="/dashboard"><i class="fa-solid fa-credit-card"></i> Mis Tarjetas</a>
+            <a routerLink="/dashboard"><i class="fa-solid fa-user"></i> Mi Perfil</a>
+            <a routerLink="/dashboard"><i class="fa-solid fa-shield-halved"></i> Seguridad</a>
         </nav>
         <button class="logout-btn" (click)="logout()">
             <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
@@ -19,7 +19,7 @@
     <main class="main-content">
         <div class="content-wrapper">
             <header class="top-header">
-                <h2>Hola, {{ user?.firstName }}! 👋</h2>
+                <h1 class="welcome-text">Hola, {{ user?.firstName }}! 👋</h1>
                 <div class="date-display">{{ today | date:'EEEE, d MMMM':'-0300' }}</div>
             </header>
 
@@ -27,7 +27,7 @@
                 <!-- Balance Section -->
                 <div class="balance-card">
                     <span class="label">SALDO DISPONIBLE</span>
-                    <h3 class="amount">{{ wallet?.balance | currency:'ARS':'symbol':'1.2-2' }}</h3>
+                    <h2 class="amount">{{ wallet?.balance | currency:'ARS':'symbol':'1.2-2' }}</h2>
                     <div class="cvu-info">
                         <span>CVU: {{ wallet?.cvu }}</span>
                         <i class="fa-regular fa-copy"></i>
@@ -45,32 +45,18 @@
 
                 <!-- Transaction Section -->
                 <div class="history-card">
-                    <h3>Últimos Movimientos</h3>
+                    <h2 class="section-title">Últimos Movimientos</h2>
                     <div class="transaction-list">
                         <div *ngFor="let tx of transactions" class="tx-item">
-                            <div class="tx-icon"
-                                [class.in]="tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.receiverId === user?.id)"
-                                [class.out]="tx.type === 'TRANSFER' && tx.senderId === user?.id">
-                                <i *ngIf="tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.receiverId === user?.id)"
-                                    class="fa-solid fa-arrow-down"></i>
-                                <i *ngIf="tx.type === 'TRANSFER' && tx.senderId === user?.id"
-                                    class="fa-solid fa-arrow-up-from-bracket"></i>
+                            <div class="tx-icon" [ngClass]="getTransactionIconClass(tx)">
+                                <i [class]="getTransactionIcon(tx)"></i>
                             </div>
                             <div class="tx-details">
-                                <p class="tx-title">
-                                    <ng-container *ngIf="tx.type === 'DEPOSIT'">Depósito recibido</ng-container>
-                                    <ng-container *ngIf="tx.type === 'TRANSFER'">
-                                        {{ tx.receiverId === user?.id ? 'Transferencia recibida' : 'Transferencia
-                                        enviada' }}
-                                    </ng-container>
-                                </p>
+                                <p class="tx-title">{{ getTransactionTitle(tx) }}</p>
                                 <p class="tx-date">{{ tx.createdAt | date:'dd/MM/yy HH:mm':'-0300' }}</p>
                             </div>
-                            <div class="tx-amount"
-                                [class.plus]="tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.receiverId === user?.id)"
-                                [class.minus]="tx.type === 'TRANSFER' && tx.senderId === user?.id">
-                                {{ (tx.type === 'DEPOSIT' || (tx.type === 'TRANSFER' && tx.receiverId === user?.id)) ?
-                                '+' : '-' }}{{ tx.amount | currency:'ARS':'symbol':'1.2-2' }}
+                            <div class="tx-amount" [ngClass]="getAmountClass(tx)">
+                                {{ isPositive(tx) ? '+' : '-' }}{{ tx.amount | currency:'ARS':'symbol':'1.2-2' }}
                             </div>
                         </div>
 
@@ -85,10 +71,11 @@
 
     <!-- Mobile Navigation Bar -->
     <nav class="mobile-nav-bar">
-        <a class="mobile-nav active"><i class="fa-solid fa-house"></i> Inicio</a>
-        <a class="mobile-nav"><i class="fa-solid fa-credit-card"></i> Mis Tarjetas</a>
-        <a class="mobile-nav"><i class="fa-solid fa-user"></i> Mi Perfil</a>
-        <a class="mobile-nav" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
+        <a routerLink="/dashboard" class="mobile-nav active"><i class="fa-solid fa-house"></i> Inicio</a>
+        <a routerLink="/dashboard" class="mobile-nav"><i class="fa-solid fa-credit-card"></i> Mis Tarjetas</a>
+        <a routerLink="/dashboard" class="mobile-nav"><i class="fa-solid fa-user"></i> Mi Perfil</a>
+        <a routerLink="/login" class="mobile-nav" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i>
+            Salir</a>
     </nav>
 
     <!-- Modals -->

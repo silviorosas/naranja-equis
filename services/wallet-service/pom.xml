@@ -17,6 +17,10 @@
     <name>Wallet Service</name>
     <description>Servicio de Gestión de Billeteras</description>
 
+    <properties>
+        <sonar.projectKey>naranjax-wallet-service</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.naranjax</groupId>

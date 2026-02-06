@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Random;
+import java.security.SecureRandom;
 
 @Service
 @Slf4j
@@ -18,7 +18,7 @@ import java.util.Random;
 public class WalletService {
 
     private final WalletRepository walletRepository;
-    private final Random random = new Random();
+    private final SecureRandom secureRandom = new SecureRandom();
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -31,8 +31,8 @@ public class WalletService {
 
         log.info("Creating wallet for user: {}", userId);
 
-        String cvu = "00000031" + (10000000000000L + (long) (random.nextDouble() * 90000000000000L));
-        String alias = email.split("@")[0] + ".nx." + (random.nextInt(900) + 100);
+        String cvu = "00000031" + (10000000000000L + (long) (secureRandom.nextDouble() * 90000000000000L));
+        String alias = email.split("@")[0] + ".nx." + (secureRandom.nextInt(900) + 100);
 
         Wallet wallet = Wallet.builder()
                 .userId(userId)

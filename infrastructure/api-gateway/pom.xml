@@ -13,6 +13,10 @@
     <artifactId>api-gateway</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
+    <properties>
+        <sonar.projectKey>naranjax-api-gateway</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

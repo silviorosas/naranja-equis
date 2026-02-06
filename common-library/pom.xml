@@ -16,6 +16,10 @@
     <name>Common Library</name>
     <description>Librería compartida con DTOs, excepciones, utilidades y configuraciones comunes</description>
 
+    <properties>
+        <sonar.projectKey>naranjax-common-library</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <!-- Spring Boot Starter (sin servidor embebido) -->
         <dependency>

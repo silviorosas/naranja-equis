@@ -50,7 +50,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             .email(userEmail)
                             .build();
 
-                    logger.info("JWT Valid. User: " + userEmail + " (ID: " + userId + "), Authorities: " + authorities);
+                    logger.debug(
+                            "JWT Valid. User: " + userEmail + " (ID: " + userId + "), Authorities: " + authorities);
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             principal,
@@ -63,8 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            // Token invalid or expired
-            logger.error("Cannot set user authentication: {}", e);
+            logger.error("Cannot set user authentication: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

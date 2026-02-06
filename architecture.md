@@ -1,4 +1,4 @@
-# 🏗️ Arquitectura de Billetera Virtual - Naranja X (v2.2)
+# 🏗️ Arquitectura de Billetera Virtual - Naranja X (v2.3)
 
 ## 📊 Visión General
 
@@ -25,6 +25,12 @@ Evolución del sistema de billetera virtual hacia un ecosistema de **Spring Clou
 - **Spring Cloud Gateway** - API Gateway y Filtros.
 - **Spring Cloud Config** - Configuración centralizada.
 - **Resilience4j** - Circuit Breaker e Isolation.
+
+### Calidad de Código & DevOps
+- **SonarQube Community** - Análisis estático y Quality Gates.
+- **JaCoCo (Java)** - Reportes de cobertura agregados.
+- **SonarJS / LCOV (Angular)** - Análisis especializado para frontend.
+- **GitHub Actions** - Automatización de calidad (CI).
 
 ### Persistencia y Mensajería
 - **MySQL 8.x** - DB relacional para transacciones y saldos.
@@ -102,12 +108,17 @@ naranjaX/
 - Frontend Responsive con experiencia de usuario premium.
 - Seguridad basada en JWT con ID incrustado.
 
-### 🔲 Fase 5 - Observabilidad y Auditoría
+### ✅ Fase 5 - Calidad de Código & Seguridad Robusta
+- Integración de SonarQube local y remota.
+- Refactor de Clean Code y accesibilidad en el Dashboard.
+- Hardening de seguridad con `SecureRandom` y CSRF protection.
+
+### 🔲 Fase 6 - Observabilidad Avanzada
 - Integración con Prometheus/Grafana.
 - Auditoría transaccional en MongoDB.
 
 ---
 
-**Versión**: 2.2 (UI & Security Refined)  
-**Fecha**: 2026-02-05  
-**Estado**: Front-to-Back Funcional 🚀
+**Versión**: 2.3 (Quality & Security Hardened)  
+**Fecha**: 2026-02-06  
+**Estado**: Estándares de Industria Alcanzados 🚀

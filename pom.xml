@@ -46,6 +46,25 @@
         
         <!-- Testing -->
         <testcontainers.version>1.19.3</testcontainers.version>
+
+        <!-- Sonar & JaCoCo -->
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.language>java</sonar.language>
+        <sonar.host.url>http://localhost:9000</sonar.host.url>
+        
+        <!-- Exclusiones globales -->
+        <sonar.exclusions>
+            **/dto/**,
+            **/entity/**,
+            **/model/**,
+            **/config/**,
+            **/*Application.java,
+            **/exception/**,
+            **/common/**
+        </sonar.exclusions>
+        
+        <jacoco.version>0.8.11</jacoco.version>
     </properties>
 
     <!-- Módulos del proyecto -->
@@ -188,6 +207,34 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        
+        <plugins>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.10.0.2594</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 </project>

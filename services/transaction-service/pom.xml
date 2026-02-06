@@ -17,6 +17,10 @@
     <name>Transaction Service</name>
     <description>Servicio de Gestión de Transacciones</description>
 
+    <properties>
+        <sonar.projectKey>naranjax-transaction-service</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.naranjax</groupId>

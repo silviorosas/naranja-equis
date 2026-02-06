@@ -13,6 +13,10 @@
     <artifactId>discovery-server</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
+    <properties>
+        <sonar.projectKey>naranjax-discovery-server</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

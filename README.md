@@ -45,7 +45,21 @@ cd frontEquis
 npm install
 ng serve --open
 ```
-Accede a: [http://localhost:4200](http://localhost:4200)
+### 3. Análisis de Calidad (SonarQube)
+Levanta la infraestructura de Sonar e inicia el escaneo:
+```bash
+# Levantar SonarQube & Postgres
+docker-compose -f docker-compose.sonar.yml up -d
+
+# Ejecutar análisis Backend (Java)
+mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.login=admin -Dsonar.password=admin
+
+# Ejecutar análisis Frontend (Angular)
+cd frontEquis
+npm test -- --watch=false --code-coverage
+npx sonar-scanner
+```
+Accede a: [http://localhost:9000](http://localhost:9000)
 
 ## 🚀 Guía de Pruebas (API)
 
@@ -80,5 +94,12 @@ curl -X POST http://localhost:8080/api/transactions/transfer \
 El sistema utiliza un modelo de seguridad basado en **UserPrincipal** y validación de propiedad de recursos. Nadie puede ver transacciones ajenas, garantizando la privacidad de los datos financieros.
 
 ---
-**Versión**: 2.2.0 (Full UI Support)  
+## 🚀 CI/CD & Calidad
+El proyecto incluye un pipeline de **GitHub Actions** (`.github/workflows/sonar.yml`) que automatiza:
+- Compilación con JDK 21.
+- Ejecución de pruebas unitarias y generación de reportes JaCoCo.
+- Análisis estático de código en SonarQube para detectar Bug, Vulnerabilities y Code Smells.
+
+---
+**Versión**: 2.3.0 (Quality & Security Hardened)  
 **Estado**: Activo 🚀
