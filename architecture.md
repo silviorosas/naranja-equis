@@ -122,3 +122,5 @@ naranjaX/
 **Versión**: 2.3 (Quality & Security Hardened)  
 **Fecha**: 2026-02-06  
 **Estado**: Estándares de Industria Alcanzados 🚀
+
+**Nota**: Este proyecto es una implementación de referencia y no debe usarse en producción sin auditorías de seguridad adicionales y pruebas exhaustivas.

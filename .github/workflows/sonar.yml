@@ -41,7 +41,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontEquis/package-lock.json
       - name: Install dependencies
-        run: cd frontEquis && npm ci
+        run: cd frontEquis && npm install --legacy-peer-deps
       - name: Run tests with coverage
         run: cd frontEquis && npm test -- --watch=false --code-coverage
       - name: SonarQube Scan
