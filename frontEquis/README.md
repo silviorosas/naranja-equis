@@ -1,59 +1,50 @@
-# FrontEquis
+# FrontEquis 🍊 (NaranjaX UI)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.1.
+Bienvenido a **FrontEquis**, la interfaz de usuario moderna y estilizada para el ecosistema de billetera virtual NaranjaX. 
 
-## Development server
+## ✨ Características Premium
 
-To start a local development server, run:
+- **📱 Mobile-First Design**: Diseñado específicamente para celulares, con un layout que se adapta fluidamente a Desktop.
+- **⚡ Experiencia Dinámica**:
+    - **Toasts NaranjaX**: Sistema de notificaciones profesionales para Feedback instantáneo.
+    - **Modales Overlays**: Paneles de ingreso y transferencia con desenfoque de fondo y centrado perfecto.
+    - **Bottom Navigation**: Barra de navegación inferior en móviles para mejor accesibilidad (estilo nativo).
+- **🇦🇷 Localización Argentina**:
+    - Formato de moneda en Pesos Argentinos (`ARS`).
+    - Horarios sincronizados con GMT-3 (Buenos Aires).
+    - Ordenamiento de movimientos: Los más recientes aparecen primero.
 
-```bash
-ng serve
-```
+## 🛠️ Tecnologías
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Angular 18** (Components Standalone)
+- **ngx-toastr** (Notifications)
+- **CSS3 / Flexbox / Grid** (Estilo a medida)
+- **FontAwesome 6** (Iconografía)
+- **RxJS** (Gestión de flujos de datos)
 
-## Code scaffolding
+## 🚀 Instalación y Desarrollo
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. **Instalar dependencias**:
+   ```bash
+   npm install
+   ```
 
-```bash
-ng generate component component-name
-```
+2. **Iniciar servidor de desarrollo**:
+   ```bash
+   ng serve
+   ```
+   La aplicación estará disponible en `http://localhost:4200`.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 📂 Estructura del Feature Dashboard
 
-```bash
-ng generate --help
-```
+El **Dashboard** es el núcleo de la aplicación, organizado para claridad y mantenimiento:
+- `dashboard.component.ts`: Lógica de ordenamiento y filtrado de transacciones.
+- `dashboard.component.html`: Layout basado en tarjetas y grillas optimizadas.
+- `dashboard.component.css`: Estilos específicos con media-queries para iPhone y Monitores 1080p.
 
-## Building
+## 🛡️ Seguridad
+La aplicación consume servicios protegidos. Utiliza un **AuthInterceptor** para adjuntar el token JWT a todas las peticiones salientes hacia el API Gateway.
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+---
+**Diseñado con ❤️ para Silvio Rosas (NaranjaX Training)**  
+**Versión**: 1.2.0 (Premium UI Refactored)
