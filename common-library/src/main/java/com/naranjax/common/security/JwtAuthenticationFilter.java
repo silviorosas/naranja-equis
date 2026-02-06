@@ -43,10 +43,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtUtils.isTokenValid(jwt)) {
                     List<GrantedAuthority> authorities = jwtUtils.extractAuthorities(jwt);
-                    logger.info("JWT Valid. User: " + userEmail + ", Authorities: " + authorities);
+                    Long userId = jwtUtils.extractUserId(jwt);
+
+                    UserPrincipal principal = UserPrincipal.builder()
+                            .id(userId)
+                            .email(userEmail)
+                            .build();
+
+                    logger.info("JWT Valid. User: " + userEmail + " (ID: " + userId + "), Authorities: " + authorities);
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userEmail,
+                            principal,
                             null,
                             authorities);
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

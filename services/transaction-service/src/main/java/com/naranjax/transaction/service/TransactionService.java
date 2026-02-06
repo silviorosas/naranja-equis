@@ -17,6 +17,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import com.naranjax.common.dto.ApiResponse;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -83,7 +86,8 @@ public class TransactionService {
         return saved;
     }
 
-    // CAMBIO: Se cambió a 'public' para que el proxy de AOP de Resilience4j funcione correctamente
+    // CAMBIO: Se cambió a 'public' para que el proxy de AOP de Resilience4j
+    // funcione correctamente
     @CircuitBreaker(name = "walletServiceCB", fallbackMethod = "fallbackValidateBalance")
     public void validateBalance(Long userId, BigDecimal amount) {
         String cacheKey = BALANCE_CACHE_KEY + userId;
@@ -105,14 +109,30 @@ public class TransactionService {
             String url = "http://wallet-service:8082/wallets/" + userId;
             log.info("NUEVO Cache-Aside: MISS - Consultando Wallet Service via REST: {}", url);
 
-            WalletDto wallet = restTemplate.getForObject(url, WalletDto.class);
-            if (wallet == null) throw new RuntimeException("Billetera no encontrada");
+            try {
+                // Usamos una respuesta genérica para mapear el ApiResponse<WalletDto>
+                ParameterizedTypeReference<ApiResponse<WalletDto>> responseType = new ParameterizedTypeReference<>() {
+                };
 
-            balance = wallet.getBalance();
-            // Solo marcamos isFromCache = false (ya lo está por defecto)
+                ApiResponse<WalletDto> response = restTemplate.exchange(
+                        url,
+                        HttpMethod.GET,
+                        null,
+                        responseType).getBody();
+
+                if (response == null || !response.isSuccess() || response.getData() == null) {
+                    throw new RuntimeException("Billetera no encontrada para el usuario: " + userId);
+                }
+
+                balance = response.getData().getBalance();
+            } catch (Exception e) {
+                log.error("Error al consultar Wallet Service: {}", e.getMessage());
+                throw new RuntimeException("Error al validar saldo: " + e.getMessage());
+            }
         }
 
-        // NUEVO: Solo actualizamos Redis si NO vino de la caché (evitamos el SETEX redundante)
+        // NUEVO: Solo actualizamos Redis si NO vino de la caché (evitamos el SETEX
+        // redundante)
         if (!isFromCache) {
             try {
                 redisTemplate.opsForValue().set(cacheKey, balance.toString(), Duration.ofMinutes(10));
@@ -144,6 +164,10 @@ public class TransactionService {
             throw new InsufficientFundsException("Saldo insuficiente (Validado por caché de emergencia)");
         }
         log.info("NUEVO Cache-Aside: Validación exitosa vía caché de emergencia. Saldo: {}", balance);
+    }
+
+    public java.util.List<Transaction> getTransactionsByUser(Long userId) {
+        return transactionRepository.findBySenderIdOrReceiverId(userId, userId);
     }
 
     private void emitTransactionEvent(Transaction transaction) {

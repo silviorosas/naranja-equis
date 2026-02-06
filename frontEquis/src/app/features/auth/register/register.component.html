@@ -1,0 +1,73 @@
+<div class="register-container">
+    <div class="register-card">
+        <div class="logo-section">
+            <h1 class="brand">Naranja<span>Equis</span></h1>
+            <p class="subtitle">Únete a la nueva era financiera</p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+            <div class="name-row">
+                <div class="form-group">
+                    <label for="firstName">Nombre</label>
+                    <input type="text" id="firstName" name="firstName" [(ngModel)]="data.firstName" required
+                        placeholder="Juan">
+                    <span class="field-error" *ngIf="validationErrors.firstName">{{ validationErrors.firstName }}</span>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Apellido</label>
+                    <input type="text" id="lastName" name="lastName" [(ngModel)]="data.lastName" required
+                        placeholder="Pérez">
+                    <span class="field-error" *ngIf="validationErrors.lastName">{{ validationErrors.lastName }}</span>
+                </div>
+            </div>
+
+            <div class="name-row">
+                <div class="form-group">
+                    <label for="documentType">Tipo Doc</label>
+                    <select id="documentType" name="documentType" [(ngModel)]="data.documentType" required>
+                        <option value="DNI">DNI</option>
+                        <option value="PASSPORT">Pasaporte</option>
+                        <option value="CUIL">CUIL</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="documentNumber">Nro Documento</label>
+                    <input type="text" id="documentNumber" name="documentNumber" [(ngModel)]="data.documentNumber"
+                        required placeholder="12345678">
+                    <span class="field-error" *ngIf="validationErrors.documentNumber">{{ validationErrors.documentNumber
+                        }}</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" [(ngModel)]="data.email" required
+                    placeholder="ejemplo@correo.com">
+                <span class="field-error" *ngIf="validationErrors.email">{{ validationErrors.email }}</span>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Teléfono (Opcional)</label>
+                <input type="tel" id="phone" name="phone" [(ngModel)]="data.phone" placeholder="+54 11 1234-5678">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" [(ngModel)]="data.password" required
+                    placeholder="Mínimo 6 caracteres">
+                <span class="field-error" *ngIf="validationErrors.password">{{ validationErrors.password }}</span>
+            </div>
+
+            <p class="error-msg" *ngIf="error">{{ error }}</p>
+
+            <button type="submit" class="btn-primary" [disabled]="registerForm.invalid">
+                Crear Cuenta
+            </button>
+        </form>
+
+        <div class="footer-links">
+            <span>¿Ya tienes cuenta?</span>
+            <a routerLink="/login">Inicia sesión</a>
+        </div>
+    </div>
+</div>

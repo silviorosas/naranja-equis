@@ -74,7 +74,7 @@ public class AuthService {
                                 .build());
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(savedUser.getEmail());
-                String accessToken = jwtUtils.generateToken(userDetails);
+                String accessToken = jwtUtils.generateToken(userDetails, savedUser.getId());
                 String refreshToken = jwtUtils.generateRefreshToken(userDetails);
 
                 return AuthResponse.builder()
@@ -92,7 +92,7 @@ public class AuthService {
                                 .orElseThrow(() -> new BusinessException("Usuario no encontrado"));
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-                String accessToken = jwtUtils.generateToken(userDetails);
+                String accessToken = jwtUtils.generateToken(userDetails, user.getId());
                 String refreshToken = jwtUtils.generateRefreshToken(userDetails);
 
                 return AuthResponse.builder()

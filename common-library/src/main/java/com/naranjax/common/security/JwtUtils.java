@@ -28,6 +28,11 @@ public class JwtUtils {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public Long extractUserId(String token) {
+        Integer userId = extractClaim(token, claims -> claims.get("userId", Integer.class));
+        return userId != null ? userId.longValue() : null;
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);

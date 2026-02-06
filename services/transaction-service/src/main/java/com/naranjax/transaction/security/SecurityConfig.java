@@ -13,6 +13,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -24,9 +27,12 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
+                                .cors(Customizer.withDefaults())
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers("/actuator/**").permitAll()
+                                                .requestMatchers("/transactions/user/**").hasAnyRole("USER", "ADMIN")
                                                 .requestMatchers("/transactions/deposit").hasAnyRole("USER", "ADMIN")
                                                 .requestMatchers("/transactions/transfer").hasAnyRole("USER", "ADMIN")
                                                 .anyRequest().authenticated())

@@ -32,12 +32,17 @@ public class JwtUtils {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public Long extractUserId(String token) {
+        Integer userId = extractClaim(token, claims -> claims.get("userId", Integer.class));
+        return userId != null ? userId.longValue() : null;
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, Long userId) {
         Map<String, Object> extraClaims = new HashMap<>();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(auth -> {
@@ -46,7 +51,12 @@ public class JwtUtils {
                 })
                 .collect(Collectors.toList());
         extraClaims.put("roles", roles);
+        extraClaims.put("userId", userId);
         return generateToken(extraClaims, userDetails);
+    }
+
+    public String generateToken(UserDetails userDetails) {
+        return generateToken(userDetails, null);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {

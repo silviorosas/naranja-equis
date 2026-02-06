@@ -78,4 +78,9 @@ public class WalletService {
     public java.util.Optional<Wallet> getWalletByUserId(Long userId) {
         return walletRepository.findByUserId(userId);
     }
+
+    public java.util.Optional<Wallet> lookupWallet(String identifier) {
+        return walletRepository.findByCvu(identifier)
+                .or(() -> walletRepository.findByAlias(identifier));
+    }
 }

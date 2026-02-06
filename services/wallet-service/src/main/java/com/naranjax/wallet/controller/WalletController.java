@@ -1,5 +1,6 @@
 package com.naranjax.wallet.controller;
 
+import com.naranjax.common.dto.ApiResponse;
 import com.naranjax.wallet.entity.Wallet;
 import com.naranjax.wallet.service.WalletService;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,16 @@ public class WalletController {
     private final WalletService walletService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Wallet> getWalletByUserId(@PathVariable Long userId) {
+    public ResponseEntity<ApiResponse<Wallet>> getWalletByUserId(@PathVariable Long userId) {
         return walletService.getWalletByUserId(userId)
-                .map(ResponseEntity::ok)
+                .map(wallet -> ResponseEntity.ok(ApiResponse.success(wallet, "Billetera obtenida")))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/lookup/{identifier}")
+    public ResponseEntity<ApiResponse<Wallet>> lookupWallet(@PathVariable String identifier) {
+        return walletService.lookupWallet(identifier)
+                .map(wallet -> ResponseEntity.ok(ApiResponse.success(wallet, "Billetera encontrada")))
                 .orElse(ResponseEntity.notFound().build());
     }
 }
