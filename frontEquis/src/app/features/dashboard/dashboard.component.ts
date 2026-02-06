@@ -72,7 +72,7 @@ export class DashboardComponent implements OnInit {
                 this.toastr.success('Depósito realizado con éxito', 'Éxito');
             },
             error: (err) => {
-                this.toastr.error('Error al procesar el depósito', 'Error');
+                this.toastr.error(err.message || 'Error al procesar el depósito', 'Error');
             }
         });
     }
@@ -101,7 +101,7 @@ export class DashboardComponent implements OnInit {
                     },
                     error: (err) => {
                         console.error('Error en transferencia', err);
-                        this.toastr.error(err.error?.message || 'Error al procesar la transferencia', 'Error');
+                        this.toastr.error(err.message || 'Error al procesar la transferencia', 'Error');
                     }
                 });
             },

@@ -27,7 +27,7 @@ export class LoginComponent {
                 this.router.navigate(['/dashboard']);
             },
             error: (err) => {
-                this.toastr.error('Credenciales inválidas o error de conexión', 'Error');
+                this.toastr.error(err.message || 'Credenciales inválidas o error de conexión', 'Error');
             }
         });
     }
