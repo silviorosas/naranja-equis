@@ -102,4 +102,4 @@ El proyecto incluye un pipeline de **GitHub Actions** (`.github/workflows/sonar.
 
 ---
 **Versión**: 2.3.0 (Quality & Security Hardened)  
-**Estado**: Activo 🚀
+**Estado**: Activo 
