@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: cd frontEquis && npm install --legacy-peer-deps
       - name: Run tests with coverage
-        run: cd frontEquis && npm test -- --watch=false --code-coverage
+        run: cd frontEquis && npm test -- --watch=false --code-coverage --browsers=ChromeHeadless
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
