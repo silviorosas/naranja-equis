@@ -25,6 +25,7 @@
 - ✅ **JaCoCo & LCOV**: Reportes de cobertura automatizados para Java y Angular.
 - ✅ **Security Hardening**: Uso de `SecureRandom` para IDs financieros y justificación de CSRF en APIs stateless.
 - ✅ **CI/CD con GitHub Actions**: Workflow automatizado para escaneo de calidad en cada Push/PR.
+- ✅ **Documentación API**: Swagger/OpenAPI 3 implementado en todos los microservicios con soporte JWT.
 
 ---
 

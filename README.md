@@ -63,6 +63,19 @@ Accede a: [http://localhost:9000](http://localhost:9000)
 
 ## 🚀 Guía de Pruebas (API)
 
+### 📄 Documentación Swagger (OpenAPI 3)
+Cada microservicio expone su propia documentación interactiva. Nota: Debes autenticarte en el botón "Authorize" con el Bearer Token (JWT) obtenido en el login.
+
+| Servicio | URL Swagger UI | URL OpenAPI JSON |
+|----------|----------------|------------------|
+| **Auth** | [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html) | [http://localhost:8081/v3/api-docs](http://localhost:8081/v3/api-docs) |
+| **Wallet** | [http://localhost:8082/swagger-ui.html](http://localhost:8082/swagger-ui.html) | [http://localhost:8082/v3/api-docs](http://localhost:8082/v3/api-docs) |
+| **Transaction** | [http://localhost:8083/swagger-ui.html](http://localhost:8083/swagger-ui.html) | [http://localhost:8083/v3/api-docs](http://localhost:8083/v3/api-docs) |
+
+---
+
+## 🚀 Guía de Pruebas (Postman)
+
 A través del Gateway (**Puerto 8080**):
 
 ### 1. Historial de Transacciones

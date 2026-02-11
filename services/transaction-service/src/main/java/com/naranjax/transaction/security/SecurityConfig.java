@@ -33,6 +33,9 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers("/actuator/**").permitAll()
+                                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**",
+                                                                "/swagger-ui.html")
+                                                .permitAll()
                                                 .requestMatchers("/transactions/user/**").hasAnyRole("USER", "ADMIN")
                                                 .requestMatchers("/transactions/deposit").hasAnyRole("USER", "ADMIN")
                                                 .requestMatchers("/transactions/transfer").hasAnyRole("USER", "ADMIN")

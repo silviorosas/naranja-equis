@@ -19,6 +19,7 @@ Evolución del sistema de billetera virtual hacia un ecosistema de **Spring Clou
 - **Spring Boot 3.2.x** - Framework principal.
 - **Spring Cloud 2023.0.x** - Ecosistema de microservicios.
 - **Spring Security + JWT** - Autenticación con Claims personalizados (`userId`).
+- **SpringDoc OpenAPI** - Documentación interactiva (Swagger UI).
 
 ### Infraestructura Spring Cloud
 - **Netflix Eureka** - Service Discovery.

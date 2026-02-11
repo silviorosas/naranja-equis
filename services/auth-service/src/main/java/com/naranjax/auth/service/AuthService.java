@@ -6,7 +6,7 @@ import com.naranjax.auth.entity.User;
 import com.naranjax.auth.entity.UserStatus;
 import com.naranjax.auth.repository.RoleRepository;
 import com.naranjax.auth.repository.UserRepository;
-import com.naranjax.auth.security.JwtUtils;
+import com.naranjax.common.security.JwtUtils;
 import com.naranjax.auth.producer.AuthProducer;
 import com.naranjax.common.event.UserRegisteredEvent;
 import com.naranjax.common.exception.BusinessException;

@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         // CORRECCIÓN: Permitimos el acceso a las billeteras de forma abierta
                         // para que el TransactionService pueda consultar el saldo
                         .requestMatchers("/wallets/**").permitAll()
