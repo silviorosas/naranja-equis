@@ -11,14 +11,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 console.error('Bad Request (400):', error.error);
                 // Spring Boot validation errors usually come in a specific format
                 // Depending on your GlobalExceptionHandler implementation
-                errorMessage = error.error.message || 'Error de validación';
-                validationErrors = error.error.errors || error.error.data;
+                errorMessage = error.error?.message || 'Error de validación';
+                validationErrors = error.error?.errors || error.error?.data;
             } else if (error.status === 401) {
-                errorMessage = 'Sesión expirada o no autorizada';
+                // Capture the specific message from backend (e.g. "Email o contraseña incorrectos")
+                errorMessage = error.error?.message || 'Sesión expirada o no autorizada';
             } else if (error.status === 403) {
-                errorMessage = 'No tienes permisos para realizar esta acción';
+                errorMessage = error.error?.message || 'No tienes permisos para realizar esta acción';
             } else if (error.status === 500) {
-                errorMessage = 'Error interno del servidor';
+                errorMessage = error.error?.message || 'Error interno del servidor';
             }
 
             // We attach the validation errors to the thrown object so components can use them

@@ -21,13 +21,17 @@ export class LoginComponent {
     password = '';
 
     onSubmit() {
+        if (!this.email || !this.password) return;
+
         this.authService.login({ email: this.email, password: this.password }).subscribe({
             next: () => {
                 this.toastr.success('¡Bienvenido de nuevo!', 'Inicio de Sesión');
                 this.router.navigate(['/dashboard']);
             },
             error: (err) => {
-                this.toastr.error(err.message || 'Credenciales inválidas o error de conexión', 'Error');
+                // El interceptor procesa el error y coloca el mensaje del backend en err.message
+                const errorMessage = err.message || 'Error de conexión o credenciales inválidas';
+                this.toastr.error(errorMessage, 'Error de Autenticación');
             }
         });
     }
