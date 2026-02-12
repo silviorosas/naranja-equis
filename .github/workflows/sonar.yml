@@ -1,10 +1,9 @@
 name: SonarQube Analysis
+
 on:
   push:
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize, reopened]
 
 jobs:
   backend-analysis:
@@ -24,7 +23,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        # NUEVO LOCAL TUNEL: Se cambió el header de ngrok por el de LocalTunnel
+        # NUEVO LOCAL TUNEL: Header de bypass
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Dsonar.ws.additionalHeaders="bypass-tunnel-reminder:true"
 
   frontend-analysis:
@@ -37,7 +36,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18' # NUEVO: Bajamos a 18 para mayor compatibilidad con el scanner
           cache: 'npm'
           cache-dependency-path: frontEquis/package-lock.json
       - name: Install dependencies
@@ -51,6 +50,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectBaseDir: frontEquis
-          # NUEVO LOCAL TUNEL: Header específico para saltar el aviso de LocalTunnel
+          # NUEVO LOCAL TUNEL: Agregamos bypass y fijamos el config de TS para evitar el error de '--module'
           args: >
             -Dsonar.ws.additionalHeaders="bypass-tunnel-reminder:true"
+            -Dsonar.typescript.tsconfigPath=tsconfig.json
