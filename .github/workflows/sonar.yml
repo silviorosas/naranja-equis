@@ -1,5 +1,4 @@
 name: SonarQube Analysis
-
 on:
   push:
     branches:
@@ -25,8 +24,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        # AGREGADO AL FINAL DEL COMANDO MVN:
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Dsonar.ws.additionalHeaders="ngrok-skip-browser-warning:1"
+        # NUEVO LOCAL TUNEL: Se cambió el header de ngrok por el de LocalTunnel
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Dsonar.ws.additionalHeaders="bypass-tunnel-reminder:true"
 
   frontend-analysis:
     name: Frontend Analysis
@@ -52,6 +51,6 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           projectBaseDir: frontEquis
-          # AGREGADO AQUÍ PARA EL FRONTEND:
+          # NUEVO LOCAL TUNEL: Header específico para saltar el aviso de LocalTunnel
           args: >
-            -Dsonar.ws.additionalHeaders="ngrok-skip-browser-warning:1"
+            -Dsonar.ws.additionalHeaders="bypass-tunnel-reminder:true"
