@@ -114,5 +114,15 @@ El proyecto incluye un pipeline de **GitHub Actions** (`.github/workflows/sonar.
 - Análisis estático de código en SonarQube para detectar Bug, Vulnerabilities y Code Smells.
 
 ---
-**Versión**: 2.3.0 (Quality & Security Hardened)  
+---
+## 🔍 Observabilidad Visual (High-Impact Logs)
+El sistema implementa un sistema de logs de alto impacto visual diseñado para monitoreo en tiempo real (ideal para demos y auditoría visual):
+
+- **⚡ Redis**: Identificación inmediata de `CACHE HIT` y `CACHE MISS` con iconos de rayo.
+- **✅ DB**: Confirmación visual de persistencia exitosa en MySQL y MongoDB.
+- **--------- [KAFKA]**: Bloques visuales sólidos (`=======`) para trazar eventos asíncronos.
+- **🔢 Step-by-Step Flow**: Flujo numerado `[PASO X/5]` para trazabilidad total de extremo a extremo.
+
+---
+**Versión**: 2.5.0 (Step-by-Step Flow & Visual Hardened)  
 **Estado**: Activo 

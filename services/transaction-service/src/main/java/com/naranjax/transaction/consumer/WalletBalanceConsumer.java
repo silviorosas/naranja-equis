@@ -18,17 +18,16 @@ public class WalletBalanceConsumer {
 
     @KafkaListener(topics = "wallet.balance.updated", groupId = "transaction-service-group")
     public void handleBalanceUpdate(BalanceUpdatedEvent event) {
-        // Asegúrate de usar el nombre de método que tenga la clase en COMMON
-        // Probablemente es event.getNewBalance()
-        log.info("Actualizando caché de Redis para usuario: {} - Nuevo Saldo: {}",
-                event.getUserId(), event.getNewBalance());
+        log.info("==================== [KAFKA-RECV] ====================");
+        log.info("[TX-SRV] Sincronizando caché de saldo desde Kafka");
+        log.info("======================================================");
 
         if (event.getNewBalance() != null) {
             redisTemplate.opsForValue().set(
                     BALANCE_CACHE_KEY + event.getUserId(),
                     event.getNewBalance().toString(),
-                    Duration.ofMinutes(10)
-            );
+                    Duration.ofMinutes(10));
+            log.info("[TX-SRV] ⚡ REDIS: Caché actualizada para User {}", event.getUserId());
         }
     }
 

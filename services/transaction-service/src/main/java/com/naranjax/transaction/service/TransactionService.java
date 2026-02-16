@@ -41,7 +41,7 @@ public class TransactionService {
 
     @Transactional
     public Transaction processDeposit(Long userId, BigDecimal amount) {
-        log.info("Processing deposit for user: {} with amount: {}", userId, amount);
+        log.info("[PASO 1/5] [TX-SRV] 📥 RECIBIENDO SOLICITUD: Depósito para User {} ($ {})", userId, amount);
         Transaction transaction = Transaction.builder()
                 .senderId(0L)
                 .receiverId(userId)
@@ -52,6 +52,7 @@ public class TransactionService {
                 .build();
 
         Transaction saved = transactionRepository.save(transaction);
+        log.info("[PASO 3/5] [TX-SRV] ✅ MYSQL/MONGO: Transacción persistida y Auditada.");
         auditTransaction(saved);
         emitTransactionEvent(saved);
         return saved;
@@ -59,7 +60,7 @@ public class TransactionService {
 
     @Transactional
     public Transaction processTransfer(Long senderId, TransactionRequest request) {
-        log.info("Processing transfer from: {} to: {} with amount: {}",
+        log.info("[PASO 1/5] [TX-SRV] 📥 RECIBIENDO SOLICITUD: Transferencia de User {} a User {} ($ {})",
                 senderId, request.getReceiverId(), request.getAmount());
 
         if (senderId.equals(request.getReceiverId())) {
@@ -78,6 +79,7 @@ public class TransactionService {
                 .build();
 
         Transaction saved = transactionRepository.save(transaction);
+        log.info("[PASO 3/5] [TX-SRV] ✅ MYSQL/MONGO: Transacción persistida y Auditada.");
 
         // === NUEVO: Auditoría en MongoDB para transferencias ===
         auditTransaction(saved);
@@ -97,7 +99,7 @@ public class TransactionService {
         try {
             String cachedBalance = (String) redisTemplate.opsForValue().get(cacheKey);
             if (cachedBalance != null) {
-                log.info("NUEVO Cache-Aside: HIT - Saldo en Redis para user {}: {}", userId, cachedBalance);
+                log.info("[PASO 2/5] [TX-SRV] ⚡ REDIS: Cache Hit (Saldo: $ {})", cachedBalance);
                 balance = new BigDecimal(cachedBalance);
                 isFromCache = true; // Marcamos que ya lo tenemos
             }
@@ -107,7 +109,7 @@ public class TransactionService {
 
         if (balance == null) {
             String url = "http://wallet-service:8082/wallets/" + userId;
-            log.info("NUEVO Cache-Aside: MISS - Consultando Wallet Service via REST: {}", url);
+            log.info("[PASO 2/5] [TX-SRV] ⚡ REDIS: Cache Miss -> Consultando Wallet Service...");
 
             try {
                 // Usamos una respuesta genérica para mapear el ApiResponse<WalletDto>
@@ -136,7 +138,7 @@ public class TransactionService {
         if (!isFromCache) {
             try {
                 redisTemplate.opsForValue().set(cacheKey, balance.toString(), Duration.ofMinutes(10));
-                log.info("NUEVO Cache-Aside: Redis actualizado tras consulta REST");
+                log.info("[TX-SRV] ⚡ REDIS: Sincronizado tras consulta REST");
             } catch (Exception e) {
                 log.warn("NUEVO Cache-Aside: Error al escribir en Redis");
             }
@@ -163,7 +165,7 @@ public class TransactionService {
         if (balance.compareTo(amount) < 0) {
             throw new InsufficientFundsException("Saldo insuficiente (Validado por caché de emergencia)");
         }
-        log.info("NUEVO Cache-Aside: Validación exitosa vía caché de emergencia. Saldo: {}", balance);
+        log.info("[PASO 2/5] [TX-SRV] ⚡ REDIS: Cache Hit (EMERGENCIA) (Saldo: $ {})", balance);
     }
 
     public java.util.List<Transaction> getTransactionsByUser(Long userId) {
@@ -178,6 +180,10 @@ public class TransactionService {
                 .amount(transaction.getAmount())
                 .type(transaction.getType().name())
                 .build();
+
+        log.info("==================== [KAFKA-EMIT] ====================");
+        log.info("Enviando evento de transferencia -> Topic: transaction.events");
+        log.info("======================================================");
         kafkaTemplate.send("transaction.events", event);
     }
 
@@ -194,6 +200,7 @@ public class TransactionService {
                 .auditRole("SYSTEM_AUDIT")
                 .build();
         auditRepository.save(audit);
+        log.info("✅ Audit record saved in MongoDB for Transaction ID: {}", transaction.getId());
     }
 
     @lombok.Data

@@ -25,3 +25,9 @@ management:
 jwt:
   secret: naranjax-secret-key-change-in-production-minimum-256-bits-required-very-long-string
   expiration: 86400000 # 24 horas
+
+logging:
+  level:
+    com.netflix.discovery: WARN
+    com.netflix.eureka: WARN
+    com.netflix.discovery.shared.transport.decorator.ConfigClusterResolver: WARN

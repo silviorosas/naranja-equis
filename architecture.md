@@ -1,4 +1,4 @@
-# 🏗️ Arquitectura de Billetera Virtual - Naranja X (v2.3)
+# 🏗️ Arquitectura de Billetera Virtual - Naranja X (v2.5)
 
 ## 📊 Visión General
 
@@ -114,14 +114,15 @@ naranjaX/
 - Refactor de Clean Code y accesibilidad en el Dashboard.
 - Hardening de seguridad con `SecureRandom` y CSRF protection.
 
-### 🔲 Fase 6 - Observabilidad Avanzada
-- Integración con Prometheus/Grafana.
-- Auditoría transaccional en MongoDB.
+### ✅ Fase 6 - Observabilidad Avanzada
+- ✅ **Step-by-Step Visual Flow**: Implementación de traza numerada y jerárquica para demostraciones.
+- 🔲 Integración con Prometheus/Grafana.
+- ✅ Auditoría transaccional en MongoDB.
 
 ---
 
-**Versión**: 2.3 (Quality & Security Hardened)  
-**Fecha**: 2026-02-11  
+**Versión**: 2.5 (Step-by-Step Flow Hardened)  
+**Fecha**: 2026-02-16  
 **Estado**: Estándares de Industria Alcanzados 🚀
 
 **Nota**: Este proyecto es una implementación de referencia y no debe usarse en producción sin auditorías de seguridad adicionales y pruebas exhaustivas.

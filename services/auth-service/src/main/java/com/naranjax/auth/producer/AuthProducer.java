@@ -15,7 +15,9 @@ public class AuthProducer {
     private static final String TOPIC = "user.registered";
 
     public void sendUserRegisteredEvent(UserRegisteredEvent event) {
-        log.info("Sending user registered event for user: {}", event.getEmail());
+        log.info("==================== [KAFKA-EMIT] ====================");
+        log.info("[AUTH-SRV] Enviando evento de registro -> Topic: {}", TOPIC);
+        log.info("======================================================");
         kafkaTemplate.send(TOPIC, String.valueOf(event.getUserId()), event);
     }
 }

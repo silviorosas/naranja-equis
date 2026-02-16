@@ -43,12 +43,13 @@ public class WalletService {
                 .build();
 
         walletRepository.save(wallet);
-        log.info("Wallet created successfully with CVU: {}", cvu);
+        log.info("✅ Wallet saved in MySQL for User: {}", userId);
+        log.info("✅ Wallet created successfully with CVU: {}", cvu);
     }
 
     @Transactional
     public void updateBalance(Long userId, BigDecimal amount, String type) {
-        log.info("Updating balance for user: {}. Amount: {}. Type: {}", userId, amount, type);
+        log.info("[PASO 4/5] [WLT-SRV] 🔄 PROCESANDO: Actualizando saldos en MySQL para User {}...", userId);
 
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cartera no encontrada para el usuario: " + userId));
@@ -64,7 +65,7 @@ public class WalletService {
         }
 
         walletRepository.save(wallet);
-        log.info("Balance updated successfully for user: {}. New balance: {}", userId, wallet.getBalance());
+        log.info("[PASO 5/5] [WLT-SRV] ✅ ÉXITO: Nuevo saldo User {} ($ {})", userId, wallet.getBalance());
 
         // Notificamos al mundo el nuevo saldo
         BalanceUpdatedEvent balanceEvent = BalanceUpdatedEvent.builder()
@@ -72,6 +73,9 @@ public class WalletService {
                 .newBalance(wallet.getBalance())
                 .build();
 
+        log.info("==================== [KAFKA-EMIT] ====================");
+        log.info("Notificando nuevo saldo -> Topic: wallet.balance.updated");
+        log.info("======================================================");
         kafkaTemplate.send("wallet.balance.updated", userId.toString(), balanceEvent);
     }
 

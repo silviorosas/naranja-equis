@@ -17,7 +17,9 @@ public class WalletConsumer {
 
     @KafkaListener(topics = "user.registered", groupId = "wallet-service-group")
     public void consumeUserRegistered(UserRegisteredEvent event) {
-        log.info("Consumed user registered event for email: {}", event.getEmail());
+        log.info("==================== [KAFKA-RECV] ====================");
+        log.info("Evento recibido de Topic: user.registered");
+        log.info("======================================================");
         try {
             walletService.createWallet(event.getUserId(), event.getEmail());
         } catch (Exception e) {
@@ -27,9 +29,10 @@ public class WalletConsumer {
 
     @KafkaListener(topics = "transaction.events", groupId = "wallet-service-group")
     public void consumeTransactionCompleted(TransactionCompletedEvent event) {
-        log.info("Consumed transaction completed event for ID: {}. Type: {}", 
-                event.getTransactionId(), event.getType());
-        
+        log.info("==================== [KAFKA-RECV] ==================== ");
+        log.info("Evento recibido de Topic: transaction.events");
+        log.info("====================================================== ");
+
         try {
             if ("DEPOSIT".equals(event.getType())) {
                 walletService.updateBalance(event.getReceiverId(), event.getAmount(), "DEPOSIT");
@@ -40,7 +43,7 @@ public class WalletConsumer {
                 walletService.updateBalance(event.getReceiverId(), event.getAmount(), "TRANSFER_IN");
             }
         } catch (Exception e) {
-            log.error("Error updating balances for transaction {}: {}", 
+            log.error("Error updating balances for transaction {}: {}",
                     event.getTransactionId(), e.getMessage());
             // En un sistema real, aquí gatillaríamos eventos de compensación / Sagas
         }
