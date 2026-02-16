@@ -52,7 +52,7 @@ naranjaX/
 
 ---
 
-## 🎯 Próximos Pasos Prioritarios
+## 🎯 Próximos Pasos Prioritarios para la fase 6
 
 1.  **Conectar Notificaciones**: Activar el envío de emails reales al detectar eventos de Kafka.
 2.  **Panel de Administración**: Agregar vistas para usuarios con rol `ADMIN` en el frontend.
