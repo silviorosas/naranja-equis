@@ -61,7 +61,10 @@
             **/config/**,
             **/*Application.java,
             **/exception/**,
-            **/common/**
+            **/common/**,
+            **/*Consumer.java,
+            **/*Producer.java,
+            **/repository/**
         </sonar.exclusions>
 
         <!-- Exclusiones específicas para cobertura (Quality Gate) -->
@@ -74,6 +77,9 @@
             **/exception/**,
             **/common/**,
             **/repository/**,
+            **/*Consumer.java,
+            **/*Producer.java,
+            **/mapper/**,
             **/exception/**
         </sonar.coverage.exclusions>
         

@@ -17,9 +17,7 @@ public class WalletConsumer {
 
     @KafkaListener(topics = "user.registered", groupId = "wallet-service-group")
     public void consumeUserRegistered(UserRegisteredEvent event) {
-        log.info("==================== [KAFKA-RECV] ====================");
-        log.info("Evento recibido de Topic: user.registered");
-        log.info("======================================================");
+        log.info("[WLT-SRV] 📥 KAFKA-RECV: Nuevo usuario registrado (ID: {})", event.getUserId());
         try {
             walletService.createWallet(event.getUserId(), event.getEmail());
         } catch (Exception e) {
@@ -29,9 +27,7 @@ public class WalletConsumer {
 
     @KafkaListener(topics = "transaction.events", groupId = "wallet-service-group")
     public void consumeTransactionCompleted(TransactionCompletedEvent event) {
-        log.info("==================== [KAFKA-RECV] ==================== ");
-        log.info("Evento recibido de Topic: transaction.events");
-        log.info("====================================================== ");
+        log.info("[WLT-SRV] 📥 KAFKA-RECV: Transacción completada recibida (ID: {})", event.getTransactionId());
 
         try {
             if ("DEPOSIT".equals(event.getType())) {

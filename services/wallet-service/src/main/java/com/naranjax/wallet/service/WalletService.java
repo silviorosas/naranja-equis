@@ -73,9 +73,7 @@ public class WalletService {
                 .newBalance(wallet.getBalance())
                 .build();
 
-        log.info("==================== [KAFKA-EMIT] ====================");
-        log.info("Notificando nuevo saldo -> Topic: wallet.balance.updated");
-        log.info("======================================================");
+        log.info("[PASO 5+/5] [WLT-SRV] 🚀 KAFKA-EMIT: Enviando 'wallet.balance.updated' para User {}", userId);
         kafkaTemplate.send("wallet.balance.updated", userId.toString(), balanceEvent);
     }
 

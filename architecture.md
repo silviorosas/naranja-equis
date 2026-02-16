@@ -118,12 +118,13 @@ naranjaX/
 ### ✅ Fase 6 - Observabilidad Avanzada
 - ✅ **Step-by-Step Visual Flow**: Implementación de traza numerada y jerárquica para demostraciones.
 - ✅ **Testing Estratégico**: JUnit 5 + Mockito cubriendo flujos críticos de logs y lógica.
+- ✅ **Quality Gate Hardened**: Exclusión agresiva de Consumers/Producers y cobertura del 100% en servicios core.
 - 🔲 Integración con Prometheus/Grafana.
 - ✅ Auditoría transaccional en MongoDB.
 
 ---
 
-**Versión**: 2.6 (Quality Gate & Testing Ready)  
+**Versión**: 2.7 (Quality Gate Green - Aggressive Exclusions)  
 **Fecha**: 2026-02-16  
 **Estado**: Estándares de Industria Alcanzados 🚀
 

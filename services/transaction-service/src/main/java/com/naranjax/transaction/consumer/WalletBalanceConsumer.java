@@ -18,9 +18,7 @@ public class WalletBalanceConsumer {
 
     @KafkaListener(topics = "wallet.balance.updated", groupId = "transaction-service-group")
     public void handleBalanceUpdate(BalanceUpdatedEvent event) {
-        log.info("==================== [KAFKA-RECV] ====================");
-        log.info("[TX-SRV] Sincronizando caché de saldo desde Kafka");
-        log.info("======================================================");
+        log.info("[TX-SRV] 📥 KAFKA-RECV: Sincronizando caché desde 'wallet.balance.updated'");
 
         if (event.getNewBalance() != null) {
             redisTemplate.opsForValue().set(
