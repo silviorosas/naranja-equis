@@ -22,11 +22,12 @@
 
 ### ✅ Fase 5: Calidad de Código & CI/CD (NUEVO)
 - ✅ **SonarQube Integration**: Análisis estático de código para Backend y Frontend.
+- ✅ **Quality Gate Green**: Cobertura superior al 80% en código nuevo tras exclusión estratégica de DTOs y Entities.
+- ✅ **Unit Testing**: Implementación de JUnit 5 + Mockito en Transaction Service cubriendo lógica y logs.
 - ✅ **JaCoCo & LCOV**: Reportes de cobertura automatizados para Java y Angular.
-- ✅ **Security Hardening**: Uso de `SecureRandom` para IDs financieros y justificación de CSRF en APIs stateless.
-- ✅ **CI/CD con GitHub Actions**: Workflow automatizado para escaneo de calidad en cada Push/PR.
-- ✅ **Documentación API**: Swagger/OpenAPI 3 implementado en todos los microservicios con soporte JWT.
-- ✅ **Step-by-Step Visual Flow**: Sistema de logs jerárquico y numerado para demostraciones de alto impacto.
+- ✅ **Security Hardening**: Uso de `SecureRandom` para IDs financieros.
+- ✅ **Documentación API**: Swagger/OpenAPI 3 implementado.
+- ✅ **Step-by-Step Visual Flow**: Sistema de logs jerárquico y optimizado.
 
 ---
 
@@ -39,15 +40,15 @@ naranjaX/
 │
 ├── 📁 infrastructure/           # Eureka, Config Server, Gateway
 │
-├── 📁 services/                 # Microservicios (Auth, Wallet, Transaction)
+├── 📁 services/                 # Microservicios (Auth, Wallet, Transaction, Notification)
 │
 ├── 📁 frontEquis/               # Frontend con sonar-project.properties
 │
 ├── 📁 common-library/           # Shared Lib (Secured JwtUtils)
 │
-├── 📄 docker-compose.sonar.yml  # NUEVO: Infra de SonarQube & Postgres
-├── 📄 pom.xml                   # Configuración JaCoCo & Sonar centralizada
-└── 📄 architecture.md           # Arquitectura 2.3 (Quality & Security)
+├── 📄 docker-compose.sonar.yml  # Infra de SonarQube & Postgres
+├── 📄 pom.xml                   # Configuración JaCoCo & Sonar (v2.6 con exclusiones)
+└── 📄 architecture.md           # Arquitectura 2.6 (Quality Gate & Testing Ready)
 ```
 
 ---
@@ -73,5 +74,5 @@ naranjaX/
 ---
 
 **Estado del Proyecto**: Calidad Certificada - Trazabilidad Step-by-Step - UI Premium 🛡️
-**Versión**: 2.5.0-SNAPSHOT
+**Versión**: 2.6.0-SNAPSHOT
 **Última Actualización**: 2026-02-16

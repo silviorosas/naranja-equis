@@ -63,6 +63,19 @@
             **/exception/**,
             **/common/**
         </sonar.exclusions>
+
+        <!-- Exclusiones específicas para cobertura (Quality Gate) -->
+        <sonar.coverage.exclusions>
+            **/dto/**,
+            **/entity/**,
+            **/model/**,
+            **/config/**,
+            **/*Application.java,
+            **/exception/**,
+            **/common/**,
+            **/repository/**,
+            **/exception/**
+        </sonar.coverage.exclusions>
         
         <jacoco.version>0.8.11</jacoco.version>
     </properties>

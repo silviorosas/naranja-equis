@@ -181,9 +181,7 @@ public class TransactionService {
                 .type(transaction.getType().name())
                 .build();
 
-        log.info("==================== [KAFKA-EMIT] ====================");
-        log.info("Enviando evento de transferencia -> Topic: transaction.events");
-        log.info("======================================================");
+        log.info("[PASO 4/5] [TX-SRV] 🚀 KAFKA-EMIT: Enviando evento a topic 'transaction.events'");
         kafkaTemplate.send("transaction.events", event);
     }
 
@@ -200,13 +198,14 @@ public class TransactionService {
                 .auditRole("SYSTEM_AUDIT")
                 .build();
         auditRepository.save(audit);
-        log.info("✅ Audit record saved in MongoDB for Transaction ID: {}", transaction.getId());
+        log.info("[PASO 3/5] [TX-SRV] ✅ Persistencia completa (MySQL/MongoDB) para Transacción ID: {}",
+                transaction.getId());
     }
 
     @lombok.Data
     @lombok.NoArgsConstructor
     @lombok.AllArgsConstructor
-    private static class WalletDto {
+    static class WalletDto {
         private Long id;
         private Long userId;
         private BigDecimal balance;

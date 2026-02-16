@@ -113,15 +113,17 @@ naranjaX/
 - Integración de SonarQube local y remota.
 - Refactor de Clean Code y accesibilidad en el Dashboard.
 - Hardening de seguridad con `SecureRandom` y CSRF protection.
+- **Calidad Gate Compliance**: Exclusión de DTOs/Entities de cobertura y generación de Unit Tests (>80%).
 
 ### ✅ Fase 6 - Observabilidad Avanzada
 - ✅ **Step-by-Step Visual Flow**: Implementación de traza numerada y jerárquica para demostraciones.
+- ✅ **Testing Estratégico**: JUnit 5 + Mockito cubriendo flujos críticos de logs y lógica.
 - 🔲 Integración con Prometheus/Grafana.
 - ✅ Auditoría transaccional en MongoDB.
 
 ---
 
-**Versión**: 2.5 (Step-by-Step Flow Hardened)  
+**Versión**: 2.6 (Quality Gate & Testing Ready)  
 **Fecha**: 2026-02-16  
 **Estado**: Estándares de Industria Alcanzados 🚀
 
