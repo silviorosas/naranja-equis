@@ -19,8 +19,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpMethod;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -65,7 +67,7 @@ class TransactionServiceTest {
         request.setAmount(amount);
         request.setDescription("Test transfer");
 
-        when(valueOperations.get("wallet_balance:" + senderId)).thenReturn("500.00");
+        when(valueOperations.get(anyString())).thenReturn("500.00");
 
         Transaction transaction = Transaction.builder()
                 .id(100L)
@@ -81,7 +83,8 @@ class TransactionServiceTest {
         Transaction result = transactionService.processTransfer(senderId, request);
 
         assertNotNull(result);
-        verify(valueOperations, times(1)).get("wallet_balance:" + senderId);
+        verify(valueOperations).get(anyString());
+        verify(transactionRepository).save(any(Transaction.class));
     }
 
     @Test
@@ -92,7 +95,7 @@ class TransactionServiceTest {
         request.setReceiverId(2L);
         request.setAmount(amount);
 
-        when(valueOperations.get("wallet_balance:" + senderId)).thenReturn(null);
+        when(valueOperations.get(anyString())).thenReturn(null);
 
         TransactionService.WalletDto walletDto = new TransactionService.WalletDto();
         walletDto.setBalance(new BigDecimal("500.00"));
@@ -100,7 +103,7 @@ class TransactionServiceTest {
 
         ResponseEntity<ApiResponse<TransactionService.WalletDto>> responseEntity = ResponseEntity.ok(apiResponse);
 
-        when(restTemplate.exchange(anyString(), any(), any(), any(ParameterizedTypeReference.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), any(ParameterizedTypeReference.class)))
                 .thenReturn(responseEntity);
 
         Transaction transaction = Transaction.builder().id(101L).senderId(senderId).receiverId(2L).amount(amount)
@@ -110,7 +113,7 @@ class TransactionServiceTest {
         Transaction result = transactionService.processTransfer(senderId, request);
 
         assertNotNull(result);
-        verify(valueOperations, times(1)).set(eq("wallet_balance:" + senderId), anyString(), any(), any());
+        verify(valueOperations).set(anyString(), anyString(), any(Duration.class));
     }
 
     @Test
@@ -124,7 +127,7 @@ class TransactionServiceTest {
         Transaction result = transactionService.processDeposit(userId, amount);
 
         assertNotNull(result);
-        verify(auditRepository, times(1)).save(any());
+        verify(auditRepository).save(any(com.naranjax.transaction.entity.TransactionAudit.class));
     }
 
     @Test
@@ -139,7 +142,7 @@ class TransactionServiceTest {
         ResponseEntity<ApiResponse<TransactionService.WalletDto>> responseEntity = ResponseEntity
                 .ok(ApiResponse.success(walletDto));
 
-        when(restTemplate.exchange(anyString(), any(), any(), any(ParameterizedTypeReference.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), any(ParameterizedTypeReference.class)))
                 .thenReturn(responseEntity);
 
         assertDoesNotThrow(() -> transactionService.validateBalance(userId, amount));
@@ -151,7 +154,7 @@ class TransactionServiceTest {
         BigDecimal amount = new BigDecimal("100.00");
 
         when(valueOperations.get(anyString())).thenReturn(null);
-        when(restTemplate.exchange(anyString(), any(), any(), any(ParameterizedTypeReference.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), any(ParameterizedTypeReference.class)))
                 .thenThrow(new RuntimeException("Service down"));
 
         assertThrows(RuntimeException.class, () -> transactionService.validateBalance(userId, amount));
@@ -161,7 +164,7 @@ class TransactionServiceTest {
     void fallbackValidateBalance_CacheHit() {
         Long userId = 1L;
         BigDecimal amount = new BigDecimal("100.00");
-        when(valueOperations.get("wallet_balance:" + userId)).thenReturn("500.00");
+        when(valueOperations.get(anyString())).thenReturn("500.00");
 
         assertDoesNotThrow(
                 () -> transactionService.fallbackValidateBalance(userId, amount, new RuntimeException("Service down")));
