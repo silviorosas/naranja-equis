@@ -14,7 +14,7 @@ Este es un ecosistema de microservicios financieros (Billetera Virtual) basado e
    - Incluye el CURL exacto y el cuerpo del JSON para probarlo.
 
 3. **Arquitectura y Calidad**:
-   - Stack: Spring Boot 3.2.x, Eureka, API Gateway, Config Server.
+   - Stack: Spring Boot 3.2.2, Eureka, API Gateway, Config Server.
    - Persistencia: MySQL (Transaccional) y MongoDB (Auditoría).
    - Mensajería: Kafka para comunicación asíncrona (Flujo de registro/billetera).
 

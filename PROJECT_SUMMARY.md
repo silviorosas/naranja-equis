@@ -15,7 +15,7 @@
 - ✅ **Resilience4j**: Integración de Circuit Breaker para todos los servicios.
 
 ### ✅ Fase 4: Frontend & Seguridad Avanzada
-- ✅ **FrontEquis (Angular 18)**: Dashboard profesional, responsive (Mobile-First) y con notificaciones Toastr.
+- ✅ **FrontEquis (Angular 20)**: Dashboard profesional, responsive (Mobile-First) y con notificaciones Toastr.
 - ✅ **Refactor de Seguridad**: Inyección de `userId` en Claims de JWT y validación de Ownership en transacciones.
 - ✅ **Fix de Login**: Robustecimiento del `JwtAuthenticationFilter` y configuración de CORS.
 - ✅ **Dashboard Refactor**: Mejora de accesibilidad (RouterLinks), jerarquía de encabezados (H1-H2) y centralización de lógica visual en el componente TS (Clean Code).
@@ -28,6 +28,10 @@
 - ✅ **Security Hardening**: Uso de `SecureRandom` para IDs financieros.
 - ✅ **Documentación API**: Swagger/OpenAPI 3 implementado.
 - ✅ **Step-by-Step Visual Flow**: Sistema de logs jerárquico y optimizado.
+- ✅ **Optimización Event-Driven**: Eliminación de llamadas síncronas en notificaciones.
+- ✅ **Resiliencia Fintech**: Resilience4j Retry implementado para mitigar Rate Limits (v3.0).
+- ✅ **UX Senior & Anti-Bloqueo 2.0**: Delay de 10s para Mailtrap, Enriquecimiento masivo de datos (Auth + Wallet) y FIX de resolución de servicios vía LoadBalancer (v3.1.1).
+- ✅ **Identity & Notification Hardening (v3.2)**: Cache-Aside con **Redis 7.2** para identidades de usuarios (Zero-Downtime Resilience) y rediseño de emails para receptores priorizando **Alias** y bloques visuales unificados.
 
 ---
 
@@ -47,17 +51,17 @@ naranjaX/
 ├── 📁 common-library/           # Shared Lib (Secured JwtUtils)
 │
 ├── 📄 docker-compose.sonar.yml  # Infra de SonarQube & Postgres
-├── 📄 pom.xml                   # Configuración JaCoCo & Sonar (v2.6 con exclusiones)
-└── 📄 architecture.md           # Arquitectura 2.6 (Quality Gate & Testing Ready)
+├── 📄 pom.xml                   # Configuración JaCoCo & Sonar (v3.2 con exclusiones)
+└── 📄 architecture.md           # Arquitectura 3.2 (Identity & Notification Hardening Ready)
 ```
 
 ---
 
 ## 🎯 Próximos Pasos Prioritarios para la fase 6
 
-1.  **Conectar Notificaciones**: Activar el envío de emails reales al detectar eventos de Kafka.
-2.  **Panel de Administración**: Agregar vistas para usuarios con rol `ADMIN` en el frontend.
-3.  **Auditoría**: Implementar el registro de eventos en MongoDB.
+1.  **Panel de Administración**: Agregar vistas para usuarios con rol `ADMIN` en el frontend.
+2.  **Seguridad**: Implementar Rate Limiting en el Gateway.
+3.  **Observabilidad**: Integrar Prometheus y Grafana.
 
 ---
 
@@ -73,6 +77,6 @@ naranjaX/
 
 ---
 
-**Estado del Proyecto**: Calidad Certificada - Trazabilidad Step-by-Step - UI Premium 🛡️
-**Versión**: 2.6.0-SNAPSHOT
-**Última Actualización**: 2026-02-16
+**Estado del Proyecto**: Calidad Certificada - Identidad Resiliente - UI Premium 🛡️
+**Versión**: 3.2.0-SNAPSHOT
+**Última Actualización**: 2026-02-17

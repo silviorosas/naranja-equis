@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #FF6600;
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 32px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .receiving-card {
+            background: linear-gradient(135deg, #00C853, #69F0AE);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .amount {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #FF6600;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Naranja Equis</h1>
+        </div>
+        <div class="content">
+            <h2 th:text="'¡Recibiste dinero, ' + ${userName} + '!'">¡Buenas noticias!</h2>
+            <p style="color: #666; font-size: 16px;">
+                <strong th:text="${senderName}">Un usuario</strong>
+                te envió dinero a tu cuenta Naranja Equis.
+            </p>
+
+            <div
+                style="background-color: #ffffff; border: 2px solid #e8f5e9; padding: 20px; border-radius: 12px; margin: 25px 0; box-shadow: 0 4px 12px rgba(0,200,83,0.05);">
+                <div style="margin-bottom: 15px; border-bottom: 1px dashed #c8e6c9; padding-bottom: 10px;">
+                    <span
+                        style="color: #00c853; font-weight: bold; text-transform: uppercase; font-size: 12px; display: block; margin-bottom: 4px;">Origen</span>
+                    <span style="font-size: 16px; color: #333;"><strong>De:</strong> <span
+                            th:text="${senderName}">Remitente</span></span><br />
+                    <span style="font-size: 14px; color: #777;"
+                        th:text="'Alias/CBU: ' + (${senderAlias != 'N/A' ? senderAlias : senderCbu})">alias</span>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <span
+                        style="color: #00c853; font-weight: bold; text-transform: uppercase; font-size: 12px; display: block; margin-bottom: 4px;">Destino</span>
+                    <span style="font-size: 16px; color: #333;"><strong>Para:</strong> <span
+                            th:text="${receiverName}">Receptor</span></span><br />
+                    <span style="font-size: 14px; color: #777;"
+                        th:text="'Alias/CBU: ' + (${receiverAlias != 'N/A' ? receiverAlias : receiverCbu})">alias</span>
+                </div>
+            </div>
+
+            <div class="receiving-card">
+                <span style="font-size: 14px; color: #fff; opacity: 0.9;">Recibiste</span><br />
+                <span class="amount" th:text="'$ ' + ${amount}">$ 0.00</span>
+                <p style="font-size: 12px; margin-top: 10px; opacity: 0.9;" th:text="${timestamp}">00/00/0000 00:00</p>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 14px; color: #888; line-height: 1.6;">
+                El saldo ya está disponible en tu cuenta. Podés usarlo para pagar servicios, transferir o cargar tu
+                celular.
+            </p>
+
+            <a href="https://naranjax.com" class="btn">Revisar mi saldo</a>
+        </div>
+        <div class="footer">
+            <p>© 2026 Naranja Equis. Todos los derechos reservados.</p>
+            <p>Este es un mensaje automático, por favor no respondas a este correo.</p>
+        </div>
+    </div>
+</body>
+
+</html>

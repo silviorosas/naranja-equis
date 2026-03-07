@@ -1,5 +1,6 @@
 package com.naranjax.auth.dto;
 
+import com.naranjax.common.dto.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

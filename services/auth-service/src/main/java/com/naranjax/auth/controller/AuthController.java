@@ -5,6 +5,7 @@ import com.naranjax.auth.dto.LoginRequest;
 import com.naranjax.auth.dto.RegisterRequest;
 import com.naranjax.auth.service.AuthService;
 import com.naranjax.common.dto.ApiResponse;
+import com.naranjax.common.dto.UserDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -41,5 +42,12 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success(response, "Login exitoso"));
+    }
+
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener usuario por ID", description = "Devuelve los datos de un usuario dado su ID")
+    @org.springframework.web.bind.annotation.GetMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<UserDto>> getUser(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        UserDto response = authService.getUserById(id);
+        return ResponseEntity.ok(ApiResponse.success(response, "Usuario encontrado"));
     }
 }

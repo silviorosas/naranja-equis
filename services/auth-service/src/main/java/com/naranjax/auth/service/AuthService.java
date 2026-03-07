@@ -8,6 +8,7 @@ import com.naranjax.auth.repository.RoleRepository;
 import com.naranjax.auth.repository.UserRepository;
 import com.naranjax.common.security.JwtUtils;
 import com.naranjax.auth.producer.AuthProducer;
+import com.naranjax.common.dto.UserDto;
 import com.naranjax.common.event.UserRegisteredEvent;
 import com.naranjax.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +75,8 @@ public class AuthService {
                                 .build());
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(savedUser.getEmail());
-                String accessToken = jwtUtils.generateToken(userDetails, savedUser.getId());
+                String fullName = savedUser.getFirstName() + " " + savedUser.getLastName();
+                String accessToken = jwtUtils.generateToken(userDetails, savedUser.getId(), fullName);
                 String refreshToken = jwtUtils.generateRefreshToken(userDetails);
 
                 return AuthResponse.builder()
@@ -92,7 +94,8 @@ public class AuthService {
                                 .orElseThrow(() -> new BusinessException("Usuario no encontrado"));
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-                String accessToken = jwtUtils.generateToken(userDetails, user.getId());
+                String fullName = user.getFirstName() + " " + user.getLastName();
+                String accessToken = jwtUtils.generateToken(userDetails, user.getId(), fullName);
                 String refreshToken = jwtUtils.generateRefreshToken(userDetails);
 
                 return AuthResponse.builder()
@@ -100,6 +103,12 @@ public class AuthService {
                                 .refreshToken(refreshToken)
                                 .user(mapToDto(user))
                                 .build();
+        }
+
+        public UserDto getUserById(Long id) {
+                User user = userRepository.findById(id)
+                                .orElseThrow(() -> new BusinessException("Usuario no encontrado"));
+                return mapToDto(user);
         }
 
         private UserDto mapToDto(User user) {

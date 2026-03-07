@@ -44,10 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (jwtUtils.isTokenValid(jwt)) {
                     List<GrantedAuthority> authorities = jwtUtils.extractAuthorities(jwt);
                     Long userId = jwtUtils.extractUserId(jwt);
+                    String fullName = jwtUtils.extractFullName(jwt);
 
                     UserPrincipal principal = UserPrincipal.builder()
                             .id(userId)
                             .email(userEmail)
+                            .fullName(fullName)
                             .build();
 
                     logger.debug(

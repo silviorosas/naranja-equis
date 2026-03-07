@@ -2,26 +2,51 @@
 trigger: always_on
 ---
 
-# 📜 MASTER_RULES: Configuración del Sistema Multi-Agente NaranjaX
+1. Sincronización de Documentación y "Single Source of Truth"
+Automatización: Cada modificación debe reflejarse en: architecture.md, PROJECT_SUMMARY.md y README.md.
 
-## 📂 Contexto Global del Proyecto
-Este es un ecosistema de microservicios financieros (Billetera Virtual) basado en Java 21 y Spring Cloud. El objetivo es emular la robustez de NaranjaX utilizando una arquitectura orientada a eventos con Kafka y resiliencia con Resilience4j.
+Actualización de Stack: Mantener versiones reales: Angular 20.2.x, Spring Boot 3.2.2 y Java 21. Prohibido referenciar Angular 18 o versiones obsoletas.
 
-## 🤖 Reglas de Comportamiento de la IA (Obligatorias)
+2. Protocolo de Desarrollo y Seguridad
+Common Library First: La lógica de JWT (JwtUtils, JwtAuthenticationFilter) es intocable fuera de la librería común.
 
-1. **Sincronización de Documentación**: 
-   - Cada vez que generes o modifiques código que afecte la estructura, la base de datos o el flujo, DEBES actualizar automáticamente los archivos: `architecture.md`, `PROJECT_SUMMARY.md` y `README.md`.
-   - No esperes a que el usuario lo pida; mantenlos como la "Única Fuente de Verdad".
+Validación de Identidad: Todo endpoint de negocio debe aplicar Ownership Validation (validar que userId del UserPrincipal coincida con el recurso).
 
-2. **Protocolo de Endpoints y Postman**:
-   - Por cada nuevo Controller o Endpoint creado, añade una sección al `README.md` llamada "🚀 Guía de Pruebas (Postman)".
-   - Incluye el CURL exacto y el cuerpo del JSON para probarlo.
+Auditoría: Endpoints críticos bajo rol ROLE_SECURITY_AUDITOR con log asíncrono en MongoDB 6.0.
 
-3. **Arquitectura y Calidad**:
-   - Stack: Spring Boot 3.2.x, Eureka, API Gateway, Config Server.
-   - Persistencia: MySQL (Transaccional) y MongoDB (Auditoría).
-   - Mensajería: Kafka para comunicación asíncrona (Flujo de registro/billetera).
+3. Comunicación y Resiliencia
+Consultas Síncronas: REST + Resilience4j (Circuit Breakers) para validaciones críticas.
 
-4. **Seguridad Innegociable**:
-   - Todo endpoint debe ser auditado por el rol `@security-auditor`.
-   - Uso de JWT y validación de roles en cada servicio.
+Eventos Asíncronos: Kafka para reconciliación de saldos y notificaciones.
+
+Performance: Patrón Cache-Aside con Redis 7.2 para saldos e idempotencia.
+
+4. Calidad de Código (Blindaje SonarQube)
+Quality Gates: Mínimo 80% de cobertura en lógica de negocio (JaCoCo).
+
+Exclusiones: Configurar Sonar para ignorar DTOs, Mappers y Boilerplate.
+
+🛡️ Regla de Integridad y No Duplicación (Anti-Chaos)
+1. Protocolo de "Common-Library" Obligatorio
+Prohibición de Duplicación: Prohibido crear DTOs, Excepciones o Constantes localmente si pueden compartirse.
+
+Refactorización: Si un servicio requiere un DTO similar a uno existente, se refactoriza el original en la common-library para hacerlo genérico.
+
+2. Preservación del Contrato de Interfaz
+Inmutabilidad: No modificar campos en eventos de Kafka o ApiResponse sin asegurar compatibilidad hacia atrás.
+
+Balanceo: Toda comunicación nueva debe ser vía Eureka y protegida por Resilience4j.
+
+3. Coherencia de Versiones y Stack
+Detección de Colisiones: Escaneo obligatorio del Parent POM para heredar versiones y evitar "Jar Hell".
+
+Angular 20: Uso estricto de Standalone Components y servicios inyectables; prohibido el uso de módulos (NgModules) antiguos.
+
+4. Validación de Impacto (Checklist Pre-Cambio)
+Antes de proponer un cambio, la IA debe validar internamente:
+
+¿Este código ya existe en common-library?
+
+¿Este cambio rompe la validación JWT en el Gateway?
+
+¿Cómo afecta este cambio al Quality Gate de SonarQube?

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #FF6600;
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 32px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .amount-card {
+            background: linear-gradient(135deg, #FF6600, #FF8533);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .amount {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .details {
+            background-color: #f9f9f9;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #FF6600;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #FF6600;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Naranja Equis</h1>
+        </div>
+        <div class="content">
+            <h2 th:text="'¡Hola, ' + ${userName} + '!'">¡Hola!</h2>
+            <p style="color: #666; font-size: 16px;">Tu transferencia se realizó con éxito. Aquí tienes los detalles:
+            </p>
+
+            <div
+                style="background-color: #ffffff; border: 2px solid #fff0e0; padding: 20px; border-radius: 12px; margin: 25px 0; box-shadow: 0 4px 12px rgba(255,105,0,0.05);">
+                <div style="margin-bottom: 15px; border-bottom: 1px dashed #ffd8b3; padding-bottom: 10px;">
+                    <span
+                        style="color: #ff6900; font-weight: bold; text-transform: uppercase; font-size: 12px; display: block; margin-bottom: 4px;">Origen</span>
+                    <span style="font-size: 16px; color: #333;"><strong>De:</strong> <span
+                            th:text="${senderName}">Remitente</span></span><br />
+                    <span style="font-size: 14px; color: #777;"
+                        th:text="'Alias/CBU: ' + (${senderAlias != 'N/A' ? senderAlias : senderCbu})">alias</span>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <span
+                        style="color: #ff6900; font-weight: bold; text-transform: uppercase; font-size: 12px; display: block; margin-bottom: 4px;">Destino</span>
+                    <span style="font-size: 16px; color: #333;"><strong>Para:</strong> <span
+                            th:text="${receiverName}">Receptor</span></span><br />
+                    <span style="font-size: 14px; color: #777;"
+                        th:text="'Alias/CBU: ' + (${receiverAlias != 'N/A' ? receiverAlias : receiverCbu})">alias</span>
+                </div>
+            </div>
+
+            <div class="amount-card">
+                <span style="font-size: 14px; color: #fff; opacity: 0.9;">Monto enviado</span><br />
+                <span class="amount" th:text="'$ ' + ${amount}">$ 0.00</span>
+            </div>
+
+            <div class="details"
+                style="background: #fdfdfd; border-radius: 8px; padding: 15px; border: 1px solid #eee;">
+                <p style="margin: 5px 0;"><strong>Número de Operación:</strong> <span th:text="${transactionId}"
+                        style="color: #ff6900;">0</span></p>
+                <p style="margin: 5px 0;"><strong>Fecha y Hora:</strong> <span th:text="${timestamp}">-</span></p>
+                <p style="margin: 5px 0;"><strong>Estado:</strong> <span style="color: #28a745; font-weight: bold;"
+                        th:text="${status}">EXITOSA</span></p>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 14px; color: #888; line-height: 1.6;">
+                Este es un comprobante oficial de Naranja Equis. No compartas tus claves ni datos sensibles con nadie.
+            </p>
+
+            <a href="https://naranjax.com" class="btn">Abrir la App</a>
+        </div>
+        <div class="footer">
+            <p>© 2026 Naranja Equis. Todos los derechos reservados.</p>
+            <p>Este es un mensaje automático, por favor no respondas a este correo.</p>
+        </div>
+    </div>
+</body>
+
+</html>

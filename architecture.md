@@ -1,23 +1,23 @@
-# 🏗️ Arquitectura de Billetera Virtual - Naranja X (v2.5)
+# 🏗️ Arquitectura de Billetera Virtual - Naranja X (v3.2)
 
 ## 📊 Visión General
 
-Evolución del sistema de billetera virtual hacia un ecosistema de **Spring Cloud** completo con una interfaz de usuario moderna en **Angular 18**. La arquitectura soporta service discovery, configuración centralizada, gateway inteligente, resiliencia avanzada y una experiencia de usuario responsive (Mobile-First).
+Evolución del sistema de billetera virtual hacia un ecosistema de **Spring Cloud** completo con una interfaz de usuario moderna en **Angular 20**. La arquitectura soporta service discovery, configuración centralizada, gateway inteligente, resiliencia avanzada y una experiencia de usuario responsive (Mobile-First).
 
 ---
 
 ## 🎯 Stack Tecnológico
 
 ### Frontend
-- **Angular 18** - Framework moderno para SPAs.
+- **Angular 20** - Framework moderno para SPAs.
 - **ngx-toastr** - Sistema de notificaciones profesionales.
 - **CSS Grid/Flexbox** - Layout responsivo Mobile-First.
 - **FontAwesome** - Iconografía enriquecida.
 
 ### Backend Core
 - **Java 21** - Última versión LTS.
-- **Spring Boot 3.2.x** - Framework principal.
-- **Spring Cloud 2023.0.x** - Ecosistema de microservicios.
+- **Spring Boot 3.2.2** - Framework principal.
+- **Spring Cloud 2023.0.0** - Ecosistema de microservicios.
 - **Spring Security + JWT** - Autenticación con Claims personalizados (`userId`).
 - **SpringDoc OpenAPI** - Documentación interactiva (Swagger UI).
 
@@ -34,9 +34,10 @@ Evolución del sistema de billetera virtual hacia un ecosistema de **Spring Clou
 - **GitHub Actions** - Automatización de calidad (CI).
 
 ### Persistencia y Mensajería
-- **MySQL 8.x** - DB relacional para transacciones y saldos.
+- **MySQL 8.0/8.2** - DB relacional para transacciones y saldos.
 - **MongoDB 6.x** - Auditoría y logs de notificaciones.
-- **Apache Kafka** - Bus de eventos asíncronos para reconciliación de saldos.
+- **Redis 7.2** - Cache de identidades y saldos (Patrón Cache-Aside).
+- **Apache Kafka** - Bus de eventos asíncronos para reconciliación de saldos y notificaciones.
 
 ---
 
@@ -54,8 +55,17 @@ Evolución del sistema de billetera virtual hacia un ecosistema de **Spring Clou
 
 #### 3️⃣ Transaction Service (8083)
 - **Responsabilidad**: P2P, Depósitos e Historial.
-- **Seguridad**: Implementa validación de **Ownership**. Un usuario solo puede visualizar su propio historial de transacciones (`/transactions/user/{id}`).
-- **Historial**: Ordenamiento cronológico descendente (Primero lo más reciente).
+- **Resiliencia (NUEVO)**: Implementa **Cache-Aside con Redis** para identidades de usuario. Si el Auth-Service no responde, el sistema recupera nombres y emails de la caché (TTL 24h), evitando placeholders como "Desconocido".
+- **Seguridad**: Implementa validación de **Ownership**. Un usuario solo puede visualizar su propio historial de transacciones.
+- **Historial**: Ordenamiento cronológico descendente.
+
+#### 4️⃣ Notification Service (8084)
+- **Responsabilidad**: Envío de notificaciones por email (transaccionales).
+- **Hardening (v3.2)**: 
+    - **¡Recibiste dinero!**: Nuevo flujo para receptores que prioriza el **Alias** sobre el CBU para una experiencia más humana.
+    - **Anti-Blocking**: Delay estratégico de **10 segundos** entre envíos para cumplir con los límites de Mailtrap sin perder notificaciones.
+- **Consumidor**: Escucha de `transaction.events` para disparar comprobantes y alertas de recepción de transferencias.
+- **Auditoría**: Persistencia de cada notificación en MongoDB para trazabilidad.
 
 ---
 
@@ -94,7 +104,7 @@ Evolución del sistema de billetera virtual hacia un ecosistema de **Spring Clou
 naranjaX/
 ├── infrastructure/           # Eureka, Config Server, Gateway
 ├── services/                 # Auth, Wallet, Transaction, Notification
-├── frontEquis/               # Aplicación Angular 18
+├── frontEquis/               # Aplicación Angular 20
 ├── common-library/           # Objetos compartidos y Seguridad
 └── docker-compose.yml        # Orquestación completa
 ```
@@ -121,11 +131,27 @@ naranjaX/
 - ✅ **Quality Gate Hardened**: Exclusión agresiva de Consumers/Producers y cobertura del 100% en servicios core.
 - 🔲 Integración con Prometheus/Grafana.
 - ✅ Auditoría transaccional en MongoDB.
+- ✅ **Optimización de Notificaciones**: Decoupling total mediante eventos enriquecidos (Customer Data in Kafka).
+- ✅ **Resiliencia Fintech**: Implementación de **Resilience4j Retry** (2s wait) para mitigar Rate Limits de Mailtrap (v3.0).
+- ✅ **Auditoría Extendida**: Registro completo de contexto (Destinatario, Monto, ID Transacción) en MongoDB 6.0 para cumplimiento regulatorio.
+- ✅ **Fase 7 - Identity & Notification Hardening (v3.2)**:
+    - ✅ **Cache-Aside for Identities**: Persistencia en Redis para nombres y emails (Zero Auth-Downtime Impact).
+    - ✅ **JSON Serialization**: RedisTemplate configurado con Jackson para objetos UserDto.
+    - ✅ **UX Polishing**: Emails para receptores con bloques visuales de Origen/Destino y Aliases obligatorios.
+    - ✅ **Stability**: Aumento del delay anti-bloqueo a 10s.
 
 ---
 
-**Versión**: 2.7 (Quality Gate Green - Aggressive Exclusions)  
-**Fecha**: 2026-02-16  
-**Estado**: Estándares de Industria Alcanzados 🚀
+## 📈 Roadmap & Versiones
+- **v1.x**: Fundamentos (Auth, Wallet).
+- **v2.0**: Transacciones P2P y Auditoría.
+- **v2.5**: Config Server y Service Discovery.
+- **v2.9**: Event-Driven Optimization.
+- **v3.0**: Resilience & UX Hardened.
+- **v3.2**: Identity & Notification Hardening (Redis Cache + Hardened Emails).
+
+**Versión**: 3.2 (Identity & Notification Hardening)  
+**Fecha**: 2026-02-17  
+**Estado**: Ecosistema Robusto y Resiliente 🚀
 
 **Nota**: Este proyecto es una implementación de referencia y no debe usarse en producción sin auditorías de seguridad adicionales y pruebas exhaustivas.

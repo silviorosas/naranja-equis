@@ -36,6 +36,10 @@ public class JwtUtils {
         return userId != null ? userId.longValue() : null;
     }
 
+    public String extractFullName(String token) {
+        return extractClaim(token, claims -> claims.get("fullName", String.class));
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -45,9 +49,10 @@ public class JwtUtils {
         return generateToken(new HashMap<>(), userDetails);
     }
 
-    public String generateToken(UserDetails userDetails, Long userId) {
+    public String generateToken(UserDetails userDetails, Long userId, String fullName) {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("userId", userId);
+        extraClaims.put("fullName", fullName);
         return generateToken(extraClaims, userDetails);
     }
 

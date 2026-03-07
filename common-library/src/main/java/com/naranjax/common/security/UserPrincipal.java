@@ -14,6 +14,7 @@ import java.security.Principal;
 public class UserPrincipal implements Principal {
     private Long id;
     private String email;
+    private String fullName;
 
     @Override
     public String getName() {

@@ -1,0 +1,52 @@
+server:
+  port: 8084
+  servlet:
+    context-path: /api
+
+spring:
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://admin:adminpass@mongodb:27017/notification_db?authSource=admin}
+  
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
+    consumer:
+      group-id: notification-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+  
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.mailtrap.io}
+    port: ${SPRING_MAIL_PORT:2525}
+    username: ${SPRING_MAIL_USERNAME:eb6c4587517b74}
+    password: ${SPRING_MAIL_PASSWORD:1961bb7be0124a}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://discovery-server:8761/eureka/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+resilience4j:
+  retry:
+    instances:
+      emailRetry:
+        maxAttempts: 3
+        waitDuration: 5s
+        retryExceptions:
+          - org.springframework.mail.MailException
+          - jakarta.mail.MessagingException
+          - java.lang.RuntimeException

@@ -284,6 +284,39 @@ services:
       - naranjax-network
     restart: unless-stopped
 
+  # ======================
+  # NOTIFICATION SERVICE
+  # ======================
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: naranjax-notification-service
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://admin:adminpass@mongodb:27017/notification_db?authSource=admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_MAIL_HOST: sandbox.smtp.mailtrap.io
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_MAIL_PORT: 2525
+      SPRING_MAIL_USERNAME: eb6c4587517b74
+      SPRING_MAIL_PASSWORD: 1961bb7be0124a
+    ports:
+      - "8084:8084"
+    networks:
+      - naranjax-network
+    restart: unless-stopped
+
 # ======================
 # NETWORKS
 # ======================

@@ -5,7 +5,7 @@ Sistema de Billetera Virtual (Fintech) construido con una arquitectura de micros
 ## 🏗️ Ecosistema Tecnológico
 
 ### 🖥️ Frontend (FrontEquis)
-- **Framework**: Angular 18+ con Standalone Components.
+- **Framework**: Angular 20 con Standalone Components.
 - **UI/UX**: Responsive Mobile-First, Toasts dinámicos (`ngx-toastr`), y estética NaranjaX.
 - **Localización**: Formateado de moneda y fechas para Argentina (GMT-3).
 
@@ -71,6 +71,7 @@ Cada microservicio expone su propia documentación interactiva. Nota: Debes aute
 | **Auth** | [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html) | [http://localhost:8081/v3/api-docs](http://localhost:8081/v3/api-docs) |
 | **Wallet** | [http://localhost:8082/swagger-ui.html](http://localhost:8082/swagger-ui.html) | [http://localhost:8082/v3/api-docs](http://localhost:8082/v3/api-docs) |
 | **Transaction** | [http://localhost:8083/swagger-ui.html](http://localhost:8083/swagger-ui.html) | [http://localhost:8083/v3/api-docs](http://localhost:8083/v3/api-docs) |
+| **Notification** | [http://localhost:8084/swagger-ui.html](http://localhost:8084/swagger-ui.html) | [http://localhost:8084/v3/api-docs](http://localhost:8084/v3/api-docs) |
 
 ---
 
@@ -118,11 +119,11 @@ El proyecto incluye un pipeline de **GitHub Actions** (`.github/workflows/sonar.
 ## 🔍 Observabilidad Visual (High-Impact Logs)
 El sistema implementa un sistema de logs de alto impacto visual diseñado para monitoreo en tiempo real (ideal para demos y auditoría visual):
 
-- **⚡ Redis**: Identificación inmediata de `CACHE HIT` y `CACHE MISS` con iconos de rayo.
+- **⚡ Redis (Identity Cache)**: Identificación inmediata de `CACHE HIT` y `CACHE MISS` para datos de usuarios. Garantiza que las notificaciones salgan con nombres reales incluso si el Auth-Service está caído.
 - **✅ DB**: Confirmación visual de persistencia exitosa en MySQL y MongoDB.
-- **--------- [KAFKA]**: Bloques visuales sólidos (`=======`) para trazar eventos asíncronos.
+- **--------- [KAFKA]**: Bloques visuales sólidos (`=======`) para trazar eventos asíncronos enriquecidos.
 - **🔢 Step-by-Step Flow**: Flujo numerado `[PASO X/5]` para trazabilidad total de extremo a extremo.
 
 ---
-**Versión**: 2.5.0 (Step-by-Step Flow & Visual Hardened)  
-**Estado**: Activo 
+**Versión**: 3.2.0 (Identity & Notification Hardening)  
+**Estado**: Activo - Ecosistema Resiliente 🛡️
