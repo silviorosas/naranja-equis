@@ -46,7 +46,7 @@ class TransactionEventListenerTest {
         transactionEventListener.handleTransactionCompleted(event);
 
         // Verificar que se envió correo al emisor y al receptor
-        verify(emailService, times(2)).sendHtmlEmail(anyLong(), anyString(), anyString(), anyString(), anyString(), anyMap());
+        verify(emailService, times(2)).sendHtmlEmail(anyLong(), anyString(), anyString(), anyString(), anyMap());
         System.out.println("[TEST-LOG] ✅ Transferencia procesada y emails verificados.");
     }
 
@@ -75,7 +75,7 @@ class TransactionEventListenerTest {
         // if ("TRANSFER".equals(event.getType()) && event.getReceiverId() != null) { ... }
         
         // Si es DEPOSIT y senderId es 0, no se envía nada.
-        verify(emailService, never()).sendHtmlEmail(anyLong(), anyString(), anyString(), anyString(), anyString(), anyMap());
+        verify(emailService, never()).sendHtmlEmail(anyLong(), anyString(), anyString(), anyString(), anyMap());
         System.out.println("[TEST-LOG] ✅ Depósito del sistema verificado (sin envío de email según lógica).");
     }
 }

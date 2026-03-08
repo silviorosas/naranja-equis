@@ -53,7 +53,25 @@ class AuthServiceTest {
         // [TEST-LOG] Iniciando test de usuario no encontrado
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> authService.getUserById(999L));
+        assertThrows(com.naranjax.common.exception.BusinessException.class, 
+                () -> authService.getUserById(999L));
         System.out.println("[TEST-LOG] ✅ Excepción de usuario no encontrado verificada.");
+    }
+
+    @Test
+    void mapToDto_ConsistencyCheck() {
+         // [TEST-LOG] Test de consistencia de mapeo interno
+         User user = User.builder()
+                .id(100L)
+                .firstName("Test")
+                .roles(Set.of())
+                .build();
+         // Mock the repository call for this specific test to avoid NotFound exception
+         when(userRepository.findById(100L)).thenReturn(Optional.of(user));
+         UserDto dto = authService.getUserById(100L); // Llama indirectamente al mapper
+         assertNotNull(dto);
+         assertEquals(user.getId(), dto.getId());
+         assertEquals(user.getFirstName(), dto.getFirstName());
+         System.out.println("[TEST-LOG] ✅ Mapeo de identidad verificado.");
     }
 }

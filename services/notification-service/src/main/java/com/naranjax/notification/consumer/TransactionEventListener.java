@@ -18,6 +18,7 @@ import java.util.Map;
 public class TransactionEventListener {
 
     private final EmailService emailService;
+    private static final String TYPE_TRANSFER = "TRANSFER";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final java.time.ZoneId ART_ZONE = java.time.ZoneId.of("America/Argentina/Buenos_Aires");
 
@@ -27,7 +28,7 @@ public class TransactionEventListener {
                 event.getTransactionId(), event.getSenderEmail(), event.getReceiverEmail());
 
         try {
-            String humanType = "TRANSFER".equals(event.getType()) ? "Transferencia" : "Depósito";
+            String humanType = TYPE_TRANSFER.equals(event.getType()) ? "Transferencia" : "Depósito";
 
             // Forzar Fecha y Hora en zona horaria de Argentina (ART - UTC-3)
             LocalDateTime nowArt = LocalDateTime.now(ART_ZONE);
@@ -55,11 +56,11 @@ public class TransactionEventListener {
 
                 String subject = "Naranja Equis - Comprobante de " + humanType;
                 emailService.sendHtmlEmail(event.getSenderId(), event.getSenderEmail(), event.getSenderName(), subject,
-                        "transaction-email", variables);
+                        variables);
 
                 // Delay estratégico aumentado a 10s para evitar saturar Mailtrap (550 Too many
                 // emails)
-                if ("TRANSFER".equals(event.getType())) {
+                if (TYPE_TRANSFER.equals(event.getType())) {
                     log.info(
                             "[NOTIF-SRV] ⏳ Esperando 10s para enviar notificación al receptor (Estrategia Anti-Bloqueo 2.0)...");
                     Thread.sleep(10000);
@@ -67,7 +68,7 @@ public class TransactionEventListener {
             }
 
             // 2. Si es transferencia, notificar al receptor
-            if ("TRANSFER".equals(event.getType()) && event.getReceiverId() != null) {
+            if (TYPE_TRANSFER.equals(event.getType()) && event.getReceiverId() != null) {
                 Map<String, Object> recVariables = new HashMap<>();
                 recVariables.put("userName", event.getReceiverName());
                 recVariables.put("amount", event.getAmount());
@@ -82,7 +83,7 @@ public class TransactionEventListener {
                 recVariables.put("timestamp", formattedDate);
 
                 emailService.sendHtmlEmail(event.getReceiverId(), event.getReceiverEmail(), event.getReceiverName(),
-                        "¡Recibiste dinero en Naranja Equis!", "receiving-transfer-email", recVariables);
+                        "¡Recibiste dinero en Naranja Equis!", recVariables);
             }
 
         } catch (InterruptedException e) {

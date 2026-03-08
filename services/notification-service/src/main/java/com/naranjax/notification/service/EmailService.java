@@ -27,7 +27,7 @@ public class EmailService {
 
     @CircuitBreaker(name = "emailService", fallbackMethod = "fallbackSendEmail")
     @Retry(name = "emailRetry")
-    public void sendHtmlEmail(Long userId, String to, String name, String subject, String templateName,
+    public void sendHtmlEmail(Long userId, String to, String name, String subject,
             Map<String, Object> variables) {
         log.info("[PASO 5/5] [NOTIF-SRV] 📧 Enviando Email a {} (Subject: {})", to, subject);
 
@@ -37,7 +37,7 @@ public class EmailService {
 
             Context context = new Context();
             context.setVariables(variables);
-            String htmlContent = templateEngine.process(templateName, context);
+            String htmlContent = templateEngine.process("transaction-email", context);
 
             helper.setTo(to);
             helper.setSubject(subject);
@@ -51,11 +51,11 @@ public class EmailService {
         } catch (Exception e) {
             log.error("[NOTIF-SRV] ❌ Error al enviar email: {}", e.getMessage());
             saveAudit(userId, to, name, subject, "Error: " + e.getMessage(), "FAILED", variables);
-            throw new RuntimeException("Error en envío de email", e);
+            throw new com.naranjax.common.exception.BusinessException("Error en envío de email: " + e.getMessage());
         }
     }
 
-    public void fallbackSendEmail(Long userId, String to, String name, String subject, String templateName,
+    public void fallbackSendEmail(Long userId, String to, String name, String subject,
             Map<String, Object> variables, Throwable t) {
         log.error("[NOTIF-SRV] 🛡️ FALLBACK: No se pudo enviar email a {}. Error: {}", to, t.getMessage());
         saveAudit(userId, to, name, subject, "FALLBACK: " + t.getMessage(), "FAILED_CIRCUIT_OPEN", variables);
