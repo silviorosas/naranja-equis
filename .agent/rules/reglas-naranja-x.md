@@ -21,8 +21,14 @@ Eventos Asíncronos: Kafka para reconciliación de saldos y notificaciones.
 
 Performance: Patrón Cache-Aside con Redis 7.2 para saldos e idempotencia.
 
-4. Calidad de Código (Blindaje SonarQube)
-Quality Gates: Mínimo 80% de cobertura en lógica de negocio (JaCoCo).
+4. Calidad de Código (Blindaje SonarQube v3.2)
+Quality Gates: Mínimo 80% de cobertura en lógica de negocio (JaCoCo) incluyendo ramas de error y bloques catch.
+
+Protocolo de Blindaje (4 Pilares):
+- Foco en Lógica: Prohibido testear DTOs, Entities o Mappers (exclusiones anti-ruido). Centrarse en @Service y @Component.
+- Escenarios de Error: Cobertura obligatoria de excepciones específicas y fallbacks de resiliencia.
+- Reliability First: Nunca silenciar InterruptedException. Usar siempre Thread.currentThread().interrupt().
+- Clean Code: Prohibido usar literales duplicados (usar constantes) y excepciones genéricas (usar BusinessException).
 
 Exclusiones: Configurar Sonar para ignorar DTOs, Mappers y Boilerplate.
 

@@ -23,7 +23,8 @@
 ### ✅ Fase 5: Calidad de Código & CI/CD (NUEVO)
 - ✅ **SonarQube Integration**: Análisis estático de código para Backend y Frontend.
 - ✅ **Quality Gate Green**: Cobertura superior al 80% en código nuevo tras exclusión estratégica de DTOs y Entities.
-- ✅ **Unit Testing**: Implementación de JUnit 5 + Mockito en Transaction Service cubriendo lógica y logs.
+- ✅ **Protocolo de Blindaje v3.2**: Implementación de los 4 pilares (Foco en Lógica, Error Coverage, Reliability con Hilos y Clean Code).
+- ✅ **Unit Testing**: Implementación de JUnit 5 + Mockito en Microservicios cubriendo lógica, catch blocks y logs.
 - ✅ **JaCoCo & LCOV**: Reportes de cobertura automatizados para Java y Angular.
 - ✅ **Security Hardening**: Uso de `SecureRandom` para IDs financieros.
 - ✅ **Documentación API**: Swagger/OpenAPI 3 implementado.
