@@ -254,12 +254,14 @@ class TransactionServiceTest {
 
         @Test
         void fallbackValidateBalance_InsufficientFunds() {
+                // Arrange
                 Long userId = 1L;
                 BigDecimal amount = new BigDecimal("1000.00");
+                RuntimeException exceptionProvocada = new RuntimeException("Service down"); // 👈 Afuera!
                 when(valueOperations.get(anyString())).thenReturn("500.00");
 
+                // Act & Assert
                 assertThrows(InsufficientFundsException.class,
-                                () -> transactionService.fallbackValidateBalance(userId, amount,
-                                                new RuntimeException("Service down")));
+                                () -> transactionService.fallbackValidateBalance(userId, amount, exceptionProvocada));
         }
 }
