@@ -1,5 +1,7 @@
 package com.naranjax.notification.service;
 
+import com.naranjax.common.dto.UserDto;
+import com.naranjax.common.event.TransactionCompletedEvent;
 import com.naranjax.notification.repository.NotificationRepository;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
@@ -64,4 +66,3 @@ class EmailServiceTest {
         System.out.println("[TEST-LOG] ✅ Fallback de EmailService auditado correctamente.");
     }
 }
- Riverside:
