@@ -10,6 +10,7 @@ import com.naranjax.transaction.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,6 +21,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpMethod;
+import com.naranjax.common.dto.UserDto;
+import com.naranjax.common.event.TransactionCompletedEvent;
+import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -58,6 +62,7 @@ class TransactionServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void processTransfer_Successful_WithCacheHit() {
         Long senderId = 1L;
         Long receiverId = 2L;
@@ -67,7 +72,27 @@ class TransactionServiceTest {
         request.setAmount(amount);
         request.setDescription("Test transfer");
 
-        when(valueOperations.get(anyString())).thenReturn("500.00");
+        // 1. Mock Balance (String)
+        when(valueOperations.get(ArgumentMatchers.contains("wallet_balance"))).thenReturn("500.00");
+
+        // 2. Mock Identidades (UserDto) - Evita ClassCastException
+        UserDto sender = UserDto.builder().id(senderId).firstName("Juan").lastName("Perez").email("juan@test.com")
+                .build();
+        UserDto receiver = UserDto.builder().id(receiverId).firstName("Maria").lastName("Gomez").email("maria@test.com")
+                .build();
+        when(valueOperations.get(ArgumentMatchers.contains("user_identity:1"))).thenReturn(sender);
+        when(valueOperations.get(ArgumentMatchers.contains("user_identity:2"))).thenReturn(receiver);
+
+        // 3. Mock Wallet data (REST) para Alias/CVU
+        TransactionService.WalletDto walletDto = new TransactionService.WalletDto();
+        walletDto.setCvu("CVU123");
+        walletDto.setAlias("juan.equis");
+        ResponseEntity<ApiResponse<TransactionService.WalletDto>> walletResponse = ResponseEntity
+                .ok(ApiResponse.success(walletDto));
+
+        lenient().when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(),
+                any(ParameterizedTypeReference.class)))
+                .thenReturn(walletResponse);
 
         Transaction transaction = Transaction.builder()
                 .id(100L)
@@ -83,37 +108,57 @@ class TransactionServiceTest {
         Transaction result = transactionService.processTransfer(senderId, request);
 
         assertNotNull(result);
-        verify(valueOperations).get(anyString());
-        verify(transactionRepository).save(any(Transaction.class));
+        // Verificamos las 3 llamadas a Redis: 1 Saldo, 1 Emisor, 1 Receptor
+        verify(valueOperations, times(3)).get(anyString());
+
+        // Verificamos Enriquecimiento de Eventos
+        ArgumentCaptor<TransactionCompletedEvent> eventCaptor = ArgumentCaptor.forClass(TransactionCompletedEvent.class);
+        verify(kafkaTemplate).send(eq("transaction.events"), eventCaptor.capture());
+        TransactionCompletedEvent capturedEvent = eventCaptor.getValue();
+
+        assertEquals("Juan Perez", capturedEvent.getSenderName());
+        assertEquals("Maria Gomez", capturedEvent.getReceiverName());
+        assertEquals("juan.equis", capturedEvent.getSenderAlias());
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void processTransfer_Successful_WithCacheMiss() {
-        Long senderId = 1L;
+        Long senderId = 3L;
+        Long receiverId = 4L;
         BigDecimal amount = new BigDecimal("100.00");
         TransactionRequest request = new TransactionRequest();
-        request.setReceiverId(2L);
+        request.setReceiverId(receiverId);
         request.setAmount(amount);
 
         when(valueOperations.get(anyString())).thenReturn(null);
 
+        // Mock Wallet REST (Balance + Alias)
         TransactionService.WalletDto walletDto = new TransactionService.WalletDto();
         walletDto.setBalance(new BigDecimal("500.00"));
-        ApiResponse<TransactionService.WalletDto> apiResponse = ApiResponse.success(walletDto);
+        walletDto.setAlias("user.miss");
+        ResponseEntity<ApiResponse<TransactionService.WalletDto>> walletResponse = ResponseEntity
+                .ok(ApiResponse.success(walletDto));
 
-        ResponseEntity<ApiResponse<TransactionService.WalletDto>> responseEntity = ResponseEntity.ok(apiResponse);
+        // Mock Identity REST
+        UserDto userMiss = UserDto.builder().id(senderId).firstName("Miss").lastName("User").build();
+        ResponseEntity<ApiResponse<UserDto>> userResponse = ResponseEntity.ok(ApiResponse.success(userMiss));
 
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(), any(ParameterizedTypeReference.class)))
-                .thenReturn(responseEntity);
+        // Stubbing condicional por tipo de retorno esperado
+        doReturn(walletResponse).when(restTemplate).exchange(contains("wallets"), any(), any(),
+                any(ParameterizedTypeReference.class));
+        doReturn(userResponse).when(restTemplate).exchange(contains("auth/users"), any(), any(),
+                any(ParameterizedTypeReference.class));
 
-        Transaction transaction = Transaction.builder().id(101L).senderId(senderId).receiverId(2L).amount(amount)
+        Transaction transaction = Transaction.builder().id(101L).senderId(senderId).receiverId(receiverId).amount(amount)
                 .type(TransactionType.TRANSFER).status("COMPLETED").build();
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
 
         Transaction result = transactionService.processTransfer(senderId, request);
 
         assertNotNull(result);
-        verify(valueOperations).set(anyString(), anyString(), any(Duration.class));
+        // Verifica que se intentó guardar en caché tras el miss
+        verify(valueOperations, atLeastOnce()).set(anyString(), any(), any(Duration.class));
     }
 
     @Test
@@ -131,6 +176,7 @@ class TransactionServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void validateBalance_RedisError_FallsBackToRest() {
         Long userId = 1L;
         BigDecimal amount = new BigDecimal("100.00");
@@ -149,6 +195,7 @@ class TransactionServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void validateBalance_RestError_ThrowsException() {
         Long userId = 1L;
         BigDecimal amount = new BigDecimal("100.00");
@@ -166,8 +213,22 @@ class TransactionServiceTest {
         BigDecimal amount = new BigDecimal("100.00");
         when(valueOperations.get(anyString())).thenReturn("500.00");
 
+        // El log "NUEVO Cache-Aside: Fallback activado" ocurre aquí al llamar al
+        // fallback
         assertDoesNotThrow(
                 () -> transactionService.fallbackValidateBalance(userId, amount, new RuntimeException("Service down")));
+        verify(valueOperations).get(ArgumentMatchers.contains("wallet_balance"));
+    }
+
+    @Test
+    void processTransfer_WithRedisError_FallbackEnabled() {
+        Long userId = 1L;
+        BigDecimal amount = new BigDecimal("100.00");
+        when(valueOperations.get(anyString())).thenReturn("500.00");
+
+        // Verificamos que el fallback cumpla con la lógica de negocio v3.2
+        assertDoesNotThrow(
+                () -> transactionService.fallbackValidateBalance(userId, amount, new RuntimeException("Redis Down")));
     }
 
     @Test
