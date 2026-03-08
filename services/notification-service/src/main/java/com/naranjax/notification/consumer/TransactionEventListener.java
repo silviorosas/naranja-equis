@@ -85,6 +85,9 @@ public class TransactionEventListener {
                         "¡Recibiste dinero en Naranja Equis!", "receiving-transfer-email", recVariables);
             }
 
+        } catch (InterruptedException e) {
+            log.error("[NOTIF-SRV] ❌ Proceso interrumpido inesperadamente: {}", e.getMessage());
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             log.error("[NOTIF-SRV] ❌ Error enviando notificaciones: {}", e.getMessage());
         }
