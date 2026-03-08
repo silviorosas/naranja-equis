@@ -58,6 +58,7 @@ mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.login=
 cd frontEquis
 npm test -- --watch=false --code-coverage
 npx sonar-scanner
+uso local tunel
 ```
 Accede a: [http://localhost:9000](http://localhost:9000)
 
