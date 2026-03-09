@@ -39,6 +39,7 @@ public class EmailService {
             context.setVariables(variables);
             String htmlContent = templateEngine.process("transaction-email", context);
 
+            helper.setFrom("no-reply@naranjax.com", "Naranja Equis");
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);

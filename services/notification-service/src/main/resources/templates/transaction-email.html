@@ -42,6 +42,15 @@
             margin: 20px 0;
         }
 
+        .amount-card-received {
+            background: linear-gradient(135deg, #28a745, #34ce57);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
         .amount {
             font-size: 32px;
             font-weight: bold;
@@ -80,7 +89,7 @@
         </div>
         <div class="content">
             <h2 th:text="'¡Hola, ' + ${userName} + '!'">¡Hola!</h2>
-            <p style="color: #666; font-size: 16px;">Tu transferencia se realizó con éxito. Aquí tienes los detalles:
+            <p style="color: #666; font-size: 16px;" th:text="${isReceiver != null and isReceiver} ? '¡Recibiste dinero en Naranja Equis! Aquí tienes los detalles de la operación:' : 'Tu transferencia se realizó con éxito. Aquí tienes los detalles:'">
             </p>
 
             <div
@@ -104,8 +113,8 @@
                 </div>
             </div>
 
-            <div class="amount-card">
-                <span style="font-size: 14px; color: #fff; opacity: 0.9;">Monto enviado</span><br />
+            <div th:class="${isReceiver != null and isReceiver} ? 'amount-card-received' : 'amount-card'">
+                <span style="font-size: 14px; color: #fff; opacity: 0.9;" th:text="${isReceiver != null and isReceiver} ? 'Monto recibido' : 'Monto enviado'">Monto enviado</span><br />
                 <span class="amount" th:text="'$ ' + ${amount}">$ 0.00</span>
             </div>
 

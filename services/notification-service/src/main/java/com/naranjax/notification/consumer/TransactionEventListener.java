@@ -53,6 +53,7 @@ public class TransactionEventListener {
                 variables.put("receiverAlias", event.getReceiverAlias());
                 variables.put("senderAlias", event.getSenderAlias());
                 variables.put("timestamp", formattedDate);
+                variables.put("isReceiver", false);
 
                 String subject = "Naranja Equis - Comprobante de " + humanType;
                 emailService.sendHtmlEmail(event.getSenderId(), event.getSenderEmail(), event.getSenderName(), subject,
@@ -81,6 +82,7 @@ public class TransactionEventListener {
                 recVariables.put("transactionId", event.getTransactionId());
                 recVariables.put("date", formattedDate);
                 recVariables.put("timestamp", formattedDate);
+                recVariables.put("isReceiver", true);
 
                 emailService.sendHtmlEmail(event.getReceiverId(), event.getReceiverEmail(), event.getReceiverName(),
                         "¡Recibiste dinero en Naranja Equis!", recVariables);
