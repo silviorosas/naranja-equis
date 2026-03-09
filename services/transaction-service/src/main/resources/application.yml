@@ -3,3 +3,9 @@ spring:
     name: transaction-service
   config:
     import: "optional:configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}"
+
+services:
+  wallet:
+    url: "http://wallet-service:8082"
+  auth:
+    url: "http://auth-service"

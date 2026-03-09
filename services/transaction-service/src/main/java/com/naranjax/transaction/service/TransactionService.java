@@ -40,6 +40,14 @@ public class TransactionService {
 
     private static final String BALANCE_CACHE_KEY = "wallet_balance:";
     private static final String USER_CACHE_KEY = "user_identity:";
+    private static final String STATUS_COMPLETED = "COMPLETED";
+    private static final String ROLE_SYSTEM_AUDIT = "SYSTEM_AUDIT";
+
+    @org.springframework.beans.factory.annotation.Value("${services.wallet.url:http://wallet-service:8082}")
+    private String walletServiceUrl;
+
+    @org.springframework.beans.factory.annotation.Value("${services.auth.url:http://auth-service}")
+    private String authServiceUrl;
 
     @Transactional
     public Transaction processDeposit(Long userId, BigDecimal amount) {
@@ -49,7 +57,7 @@ public class TransactionService {
                 .receiverId(userId)
                 .amount(amount)
                 .type(TransactionType.DEPOSIT)
-                .status("COMPLETED")
+                .status(STATUS_COMPLETED)
                 .description("Deposito de saldo")
                 .build();
 
@@ -76,7 +84,7 @@ public class TransactionService {
                 .receiverId(request.getReceiverId())
                 .amount(request.getAmount())
                 .type(TransactionType.TRANSFER)
-                .status("COMPLETED")
+                .status(STATUS_COMPLETED)
                 .description(request.getDescription())
                 .build();
 
@@ -110,7 +118,7 @@ public class TransactionService {
         }
 
         if (balance == null) {
-            String url = "http://wallet-service:8082/wallets/" + userId;
+            String url = walletServiceUrl + "/wallets/" + userId;
             log.info("[PASO 2/5] [TX-SRV] ⚡ REDIS: Cache Miss -> Consultando Wallet Service...");
 
             try {
@@ -142,7 +150,7 @@ public class TransactionService {
                 redisTemplate.opsForValue().set(cacheKey, balance.toString(), Duration.ofMinutes(10));
                 log.info("[TX-SRV] ⚡ REDIS: Sincronizado tras consulta REST");
             } catch (Exception e) {
-                log.warn("NUEVO Cache-Aside: Error al escribir en Redis");
+                log.warn("NUEVO Cache-Aside: Error al escribir en Redis: {}", e.getMessage());
             }
         }
 
@@ -229,7 +237,7 @@ public class TransactionService {
 
             // 2. Si no está en caché, buscamos en el microservicio
             log.info("[TX-SRV] 🔍 CACHE-MISS: Buscando datos del usuario {} en AUTH-SERVICE...", userId);
-            String url = "http://auth-service/auth/users/" + userId;
+            String url = authServiceUrl + "/auth/users/" + userId;
             ApiResponse<UserDto> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -256,7 +264,7 @@ public class TransactionService {
             return null;
         try {
             log.info("[TX-SRV] 🔍 Buscando billetera del usuario {} en WALLET-SERVICE...", userId);
-            String url = "http://wallet-service/wallets/" + userId;
+            String url = walletServiceUrl + "/wallets/" + userId;
             ApiResponse<WalletDto> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -284,7 +292,7 @@ public class TransactionService {
                 .status(transaction.getStatus())
                 .description(transaction.getDescription())
                 .timestamp(LocalDateTime.now())
-                .auditRole("SYSTEM_AUDIT")
+                .auditRole(ROLE_SYSTEM_AUDIT)
                 .build();
         auditRepository.save(audit);
         log.info("[PASO 3/5] [TX-SRV] ✅ Persistencia completa (MySQL/MongoDB) para Transacción ID: {}",

@@ -221,9 +221,9 @@ class TransactionServiceTest {
 
                 // El log "NUEVO Cache-Aside: Fallback activado" ocurre aquí al llamar al
                 // fallback
+                RuntimeException exceptionProvocada = new RuntimeException("Service down");
                 assertDoesNotThrow(
-                                () -> transactionService.fallbackValidateBalance(userId, amount,
-                                                new RuntimeException("Service down")));
+                                () -> transactionService.fallbackValidateBalance(userId, amount, exceptionProvocada));
                 verify(valueOperations).get(ArgumentMatchers.contains("wallet_balance"));
         }
 
@@ -234,9 +234,9 @@ class TransactionServiceTest {
                 when(valueOperations.get(anyString())).thenReturn("500.00");
 
                 // Verificamos que el fallback cumpla con la lógica de negocio v3.2
+                RuntimeException exceptionProvocada = new RuntimeException("Redis Down");
                 assertDoesNotThrow(
-                                () -> transactionService.fallbackValidateBalance(userId, amount,
-                                                new RuntimeException("Redis Down")));
+                                () -> transactionService.fallbackValidateBalance(userId, amount, exceptionProvocada));
         }
 
         @Test
